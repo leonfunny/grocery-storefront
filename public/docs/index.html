@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grocery Storefront API Documentation</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface-2: #242836;
+      --border: #2e3347;
+      --text: #e4e7ec;
+      --text-muted: #8b93a7;
+      --accent: #22c55e;
+      --accent-dim: rgba(34,197,94,.12);
+      --blue: #3b82f6;
+      --blue-dim: rgba(59,130,246,.12);
+      --orange: #f59e0b;
+      --orange-dim: rgba(245,158,11,.12);
+      --red: #ef4444;
+      --purple: #a855f7;
+      --purple-dim: rgba(168,85,247,.12);
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Layout */
+    .layout { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+      z-index: 100;
+      transition: transform .3s;
+    }
+
+    .sidebar-header {
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-header p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .sidebar nav { padding: 16px 0; }
+
+    .nav-section {
+      padding: 8px 20px 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    .nav-link {
+      display: block;
+      padding: 8px 20px 8px 28px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all .15s;
+      border-left: 2px solid transparent;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+      background: var(--surface-2);
+      border-left-color: var(--accent);
+    }
+
+    /* Main */
+    .main {
+      margin-left: 280px;
+      flex: 1;
+      max-width: 900px;
+      padding: 40px 48px 80px;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 48px 0 40px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 48px;
+    }
+
+    .hero h1 {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+
+    .hero h1 span { color: var(--accent); }
+
+    .hero p {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 560px;
+      line-height: 1.7;
+    }
+
+    .badge-row { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+
+    .badge {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 100px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge.green { background: var(--accent-dim); color: var(--accent); }
+    .badge.blue { background: var(--blue-dim); color: var(--blue); }
+    .badge.purple { background: var(--purple-dim); color: var(--purple); }
+
+    /* Sections */
+    section { margin-bottom: 56px; }
+    section > h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      padding-top: 8px;
+    }
+    section > p { color: var(--text-muted); margin-bottom: 24px; }
+
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 32px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .method-badge {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--mono);
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .method-badge.query { background: var(--blue-dim); color: var(--blue); }
+    .method-badge.mutation { background: var(--orange-dim); color: var(--orange); }
+    .method-badge.rest { background: var(--purple-dim); color: var(--purple); }
+
+    /* Code blocks */
+    .code-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 16px 0;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .copy-btn:hover {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    pre {
+      padding: 16px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    /* Syntax highlighting */
+    .kw { color: #c678dd; }
+    .type { color: #e5c07b; }
+    .str { color: #98c379; }
+    .field { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .punct { color: #abb2bf; }
+    .var { color: #e06c75; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 16px 0;
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--surface-2);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    td code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--surface-2);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--blue);
+    }
+
+    /* Info boxes */
+    .info-box {
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin: 16px 0;
+      border-left: 3px solid;
+    }
+
+    .info-box.tip { background: var(--accent-dim); border-color: var(--accent); }
+    .info-box.warn { background: var(--orange-dim); border-color: var(--orange); }
+    .info-box.info { background: var(--blue-dim); border-color: var(--blue); }
+
+    .info-box strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* Enum cards */
+    .enum-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .enum-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .enum-card h4 {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+
+    .enum-card code {
+      display: block;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 2px 0;
+    }
+
+    /* Mobile */
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 200;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; padding: 24px 20px 60px; }
+      .menu-toggle { display: flex; align-items: center; justify-content: center; }
+      .hero h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</button>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>&#127819; Grocery API</h2>
+      <p>Storefront GraphQL Documentation</p>
+    </div>
+    <nav>
+      <div class="nav-section">Getting Started</div>
+      <a class="nav-link" href="#overview">Overview</a>
+      <a class="nav-link" href="#authentication">Authentication</a>
+      <a class="nav-link" href="#endpoint">Endpoint</a>
+
+      <div class="nav-section">Queries</div>
+      <a class="nav-link" href="#products">Products</a>
+      <a class="nav-link" href="#product-by-slug">Product by Slug</a>
+      <a class="nav-link" href="#products-by-zone">Products by Zone</a>
+      <a class="nav-link" href="#recipes">Recipes</a>
+      <a class="nav-link" href="#recipe-by-slug">Recipe by Slug</a>
+      <a class="nav-link" href="#product-recipes">Product Recipes</a>
+      <a class="nav-link" href="#shipping-methods">Shipping Methods</a>
+      <a class="nav-link" href="#payment-methods">Payment Methods</a>
+
+      <div class="nav-section">Mutations</div>
+      <a class="nav-link" href="#checkout-create">Create Checkout</a>
+      <a class="nav-link" href="#checkout-shipping-address">Update Shipping Address</a>
+      <a class="nav-link" href="#checkout-shipping-method">Update Shipping Method</a>
+      <a class="nav-link" href="#checkout-note">Update Note</a>
+      <a class="nav-link" href="#checkout-promo-add">Add Promo Code</a>
+      <a class="nav-link" href="#checkout-promo-remove">Remove Promo Code</a>
+      <a class="nav-link" href="#checkout-payment">Create Payment</a>
+      <a class="nav-link" href="#checkout-complete">Complete Checkout</a>
+
+      <div class="nav-section">Reference</div>
+      <a class="nav-link" href="#types">Types</a>
+      <a class="nav-link" href="#enums">Enums</a>
+      <a class="nav-link" href="#filtering">Filtering & Sorting</a>
+      <a class="nav-link" href="#rest-api">REST API</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="hero">
+      <h1>Grocery Storefront <span>API</span></h1>
+      <p>GraphQL API documentation for the Grocery Storefront. Build food e-commerce apps with product catalog, recipes, allergen management, nutrition tracking, and checkout.</p>
+      <div class="badge-row">
+        <span class="badge green">&#9679; GraphQL</span>
+        <span class="badge blue">&#9679; URQL Client</span>
+        <span class="badge purple">&#9679; Public API</span>
+      </div>
+    </div>
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>Overview</h2>
+      <p>The Grocery Storefront API provides a complete set of GraphQL operations for building grocery e-commerce frontends.</p>
+
+      <div class="info-box tip">
+        <strong>Key Features</strong>
+        Storage zones (Frozen/Chilled/Ambient) &bull; Allergen filtering &bull; Nutrition facts &bull; Freshness tracking &bull; Recipe integration &bull; Pre-orders &bull; Multi-currency &bull; 8-language i18n
+      </div>
+    </section>
+
+    <!-- Authentication -->
+    <section id="authentication">
+      <h2>Authentication</h2>
+      <p>Most endpoints are public and require no authentication. Optional authentication via Bearer token.</p>
+
+      <div class="code-block">
+        <div class="code-header">HTTP Headers<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="field">Authorization</span>: <span class="str">Bearer &lt;grocery_token&gt;</span>
+<span class="field">Content-Type</span>: <span class="str">application/json</span></pre>
+      </div>
+
+      <div class="info-box info">
+        <strong>Token Storage</strong>
+        The token is stored in a browser cookie named <code>grocery_token</code> and automatically attached to all requests.
+      </div>
+    </section>
+
+    <!-- Endpoint -->
+    <section id="endpoint">
+      <h2>Endpoint</h2>
+      <p>All GraphQL operations use a single endpoint.</p>
+
+      <div class="code-block">
+        <div class="code-header">GraphQL Endpoint<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">POST</span>  <span class="str">https://&lt;domain&gt;/graphql/storefront</span>
+
+<span class="comment"># Example</span>
+<span class="kw">POST</span>  <span class="str">https://chesaigon.eshoper.pro/graphql/storefront</span></pre>
+      </div>
+
+      <table>
+        <tr><th>Environment</th><th>URL</th></tr>
+        <tr><td>Production</td><td><code>https://&lt;slug&gt;.eshoper.pro/graphql/storefront</code></td></tr>
+        <tr><td>Local Dev</td><td><code>http://localhost:3003/graphql/storefront</code></td></tr>
+      </table>
+    </section>
+
+    <!-- ===== QUERIES ===== -->
+
+    <!-- Products -->
+    <section id="products">
+      <h3><span class="method-badge query">Query</span> products</h3>
+      <p>Fetch a paginated list of products with optional filtering and sorting.</p>
+
+      <table>
+        <tr><th>Variable</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr><td><code>channel</code></td><td><code>String!</code></td><td>Yes</td><td>Salon/shop slug (e.g. "chesaigon")</td></tr>
+        <tr><td><code>first</code></td><td><code>Int</code></td><td>No</td><td>Number of items to return</td></tr>
+        <tr><td><code>after</code></td><td><code>String</code></td><td>No</td><td>Cursor for pagination</td></tr>
+        <tr><td><code>filter</code></td><td><code>ProductFilterInput</code></td><td>No</td><td>Filter criteria (see <a href="#filtering">Filtering</a>)</td></tr>
+        <tr><td><code>sortBy</code></td><td><code>ProductOrder</code></td><td>No</td><td>Sort order (see <a href="#filtering">Sorting</a>)</td></tr>
+      </table>
+
+      <div class="code-block">
+        <div class="code-header">Query<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">query</span> <span class="type">GroceryProducts</span>(
+  <span class="var">$channel</span>: <span class="type">String!</span>
+  <span class="var">$first</span>: <span class="type">Int</span>
+  <span class="var">$after</span>: <span class="type">String</span>
+  <span class="var">$filter</span>: <span class="type">ProductFilterInput</span>
+  <span class="var">$sortBy</span>: <span class="type">ProductOrder</span>
+) {
+  <span class="field">products</span>(
+    channel: <span class="var">$channel</span>
+    first: <span class="var">$first</span>
+    after: <span class="var">$after</span>
+    filter: <span class="var">$filter</span>
+    sortBy: <span class="var">$sortBy</span>
+  ) {
+    <span class="field">edges</span> {
+      <span class="field">node</span> {
+        <span class="field">id name slug description</span>
+        <span class="field">thumbnail</span> { <span class="field">url alt</span> }
+        <span class="field">allergens dietaryTags calories</span>
+        <span class="field">spiceLevel isAlcohol countryOfOrigin</span>
+        <span class="field">sellByWeight pricePerUnit unitOfMeasure</span>
+        <span class="field">storageZone ingredients certifications</span>
+        <span class="field">freshness nearestExpiry</span>
+        <span class="field">nutritionFacts</span> {
+          <span class="field">calories fat saturatedFat carbs</span>
+          <span class="field">sugar fiber protein salt servingSize</span>
+        }
+        <span class="field">category</span> { <span class="field">id name slug</span> }
+        <span class="field">pricing</span> {
+          <span class="field">priceRange</span> { <span class="field">start</span> { <span class="field">gross</span> { <span class="field">amount currency</span> } } }
+          <span class="field">onSale</span>
+        }
+        <span class="field">variants</span> {
+          <span class="field">id name sku quantityAvailable</span>
+          <span class="field">pricing</span> { <span class="field">price</span> { <span class="field">gross</span> { <span class="field">amount currency</span> } } }
+          <span class="field">expiryTracking shelfLifeDays</span>
+          <span class="field">preOrder</span> { <span class="field">enabled date depositPercent maxQuantity</span> }
+        }
+      }
+      <span class="field">cursor</span>
+    }
+    <span class="field">pageInfo</span> { <span class="field">hasNextPage endCursor</span> }
+    <span class="field">totalCount</span>
+  }
+}</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">Variables Example<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre>{
+  <span class="field">"channel"</span>: <span class="str">"chesaigon"</span>,
+  <span class="field">"first"</span>: <span class="type">20</span>,
+  <span class="field">"filter"</span>: {
+    <span class="field">"search"</span>: <span class="str">"pho"</span>,
+    <span class="field">"storageZone"</span>: <span class="str">"AMBIENT"</span>
+  },
+  <span class="field">"sortBy"</span>: {
+    <span class="field">"field"</span>: <span class="str">"PRICE"</span>,
+    <span class="field">"direction"</span>: <span class="str">"ASC"</span>
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- Product by Slug -->
+    <section id="product-by-slug">
+      <h3><span class="method-badge query">Query</span> product</h3>
+      <p>Get a single product by its slug, including media gallery.</p>
+
+      <table>
+        <tr><th>Variable</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr><td><code>channel</code></td><td><code>String!</code></td><td>Yes</td><td>Salon/shop slug</td></tr>
+        <tr><td><code>slug</code></td><td><code>String!</code></td><td>Yes</td><td>Product URL slug</td></tr>
+      </table>
+
+      <div class="code-block">
+        <div class="code-header">Query<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">query</span> <span class="type">GroceryProduct</span>(<span class="var">$channel</span>: <span class="type">String!</span>, <span class="var">$slug</span>: <span class="type">String!</span>) {
+  <span class="field">product</span>(channel: <span class="var">$channel</span>, slug: <span class="var">$slug</span>) {
+    <span class="field">id name slug description</span>
+    <span class="comment">... all GroceryProductFields</span>
+    <span class="field">media</span> { <span class="field">url alt type</span> }
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- Products by Zone -->
+    <section id="products-by-zone">
+      <h3><span class="method-badge query">Query</span> productsByStorageZone</h3>
+      <p>Get products filtered by temperature storage zone.</p>
+
+      <table>
+        <tr><th>Variable</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr><td><code>channel</code></td><td><code>String!</code></td><td>Yes</td><td>Salon/shop slug</td></tr>
+        <tr><td><code>zone</code></td><td><code>StorageZone!</code></td><td>Yes</td><td>FROZEN, CHILLED, or AMBIENT</td></tr>
+        <tr><td><code>first</code></td><td><code>Int</code></td><td>No</td><td>Number of items</td></tr>
+      </table>
+
+      <div class="code-block">
+        <div class="code-header">Query<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">query</span> <span class="type">ProductsByZone</span>(
+  <span class="var">$channel</span>: <span class="type">String!</span>
+  <span class="var">$zone</span>: <span class="type">StorageZone!</span>
+  <span class="var">$first</span>: <span class="type">Int</span>
+) {
+  <span class="field">productsByStorageZone</span>(channel: <span class="var">$channel</span>, zone: <span class="var">$zone</span>, first: <span class="var">$first</span>) {
+    <span class="field">edges</span> { <span class="field">node</span> { <span class="comment">...GroceryProductFields</span> } <span class="field">cursor</span> }
+    <span class="field">pageInfo</span> { <span class="field">hasNextPage endCursor</span> }
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- Recipes -->
+    <section id="recipes">
+      <h3><span class="method-badge query">Query</span> recipes</h3>
+      <p>Fetch a paginated list of recipes.</p>
+
+      <table>
+        <tr><th>Variable</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr><td><code>channel</code></td><td><code>String!</code></td><td>Yes</td><td>Salon/shop slug</td></tr>
+        <tr><td><code>first</code></td><td><code>Int</code></td><td>No</td><td>Number of items</td></tr>
+        <tr><td><code>after</code></td><td><code>String</code></td><td>No</td><td>Pagination cursor</td></tr>
+      </table>
+
+      <div class="code-block">
+        <div class="code-header">Query<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">query</span> <span class="type">Recipes</span>(<span class="var">$channel</span>: <span class="type">String!</span>, <span class="var">$first</span>: <span class="type">Int</span>, <span class="var">$after</span>: <span class="type">String</span>) {
+  <span class="field">recipes</span>(channel: <span class="var">$channel</span>, first: <span class="var">$first</span>, after: <span class="var">$after</span>) {
+    <span class="field">edges</span> {
+      <span class="field">node</span> {
+        <span class="field">id name slug description</span>
+        <span class="field">thumbnail</span> { <span class="field">url alt</span> }
+        <span class="field">servings prepTime cookTime totalTime difficulty</span>
+      }
+      <span class="field">cursor</span>
+    }
+    <span class="field">pageInfo</span> { <span class="field">hasNextPage endCursor</span> }
+    <span class="field">totalCount</span>
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- Recipe by Slug -->
+    <section id="recipe-by-slug">
+      <h3><span class="method-badge query">Query</span> recipe</h3>
+      <p>Get full recipe details including steps and linked ingredients.</p>
+
+      <table>
+        <tr><th>Variable</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr><td><code>channel</code></td><td><code>String!</code></td><td>Yes</td><td>Salon/shop slug</td></tr>
+        <tr><td><code>slug</code></td><td><code>String!</code></td><td>Yes</td><td>Recipe URL slug</td></tr>
+      </table>
+
+      <div class="code-block">
+        <div class="code-header">Query<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">query</span> <span class="type">RecipeBySlug</span>(<span class="var">$channel</span>: <span class="type">String!</span>, <span class="var">$slug</span>: <span class="type">String!</span>) {
+  <span class="field">recipe</span>(channel: <span class="var">$channel</span>, slug: <span class="var">$slug</span>) {
+    <span class="field">id name slug description</span>
+    <span class="field">thumbnail</span> { <span class="field">url alt</span> }
+    <span class="field">servings prepTime cookTime totalTime difficulty</span>
+    <span class="field">steps</span> {
+      <span class="field">stepNumber instruction</span>
+      <span class="field">image</span> { <span class="field">url alt</span> }
+    }
+    <span class="field">ingredients</span> {
+      <span class="field">id quantity unit displayName isOptional inStock</span>
+      <span class="field">variant</span> {
+        <span class="field">id name</span>
+        <span class="field">pricing</span> { <span class="field">price</span> { <span class="field">gross</span> { <span class="field">amount currency</span> } } }
+      }
+      <span class="field">product</span> {
+        <span class="field">id name</span>
+        <span class="field">thumbnail</span> { <span class="field">url alt</span> }
+      }
+    }
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- Product Recipes -->
+    <section id="product-recipes">
+      <h3><span class="method-badge query">Query</span> productRecipes</h3>
+      <p>Get recipes that use a specific product (for cross-selling).</p>
+
+      <table>
+        <tr><th>Variable</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr><td><code>channel</code></td><td><code>String!</code></td><td>Yes</td><td>Salon/shop slug</td></tr>
+        <tr><td><code>productId</code></td><td><code>ID!</code></td><td>Yes</td><td>Product UUID</td></tr>
+        <tr><td><code>first</code></td><td><code>Int</code></td><td>No</td><td>Number of items</td></tr>
+      </table>
+
+      <div class="code-block">
+        <div class="code-header">Query<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">query</span> <span class="type">ProductRecipes</span>(<span class="var">$channel</span>: <span class="type">String!</span>, <span class="var">$productId</span>: <span class="type">ID!</span>, <span class="var">$first</span>: <span class="type">Int</span>) {
+  <span class="field">productRecipes</span>(channel: <span class="var">$channel</span>, productId: <span class="var">$productId</span>, first: <span class="var">$first</span>) {
+    <span class="field">edges</span> { <span class="field">node</span> { <span class="comment">...RecipeFields</span> } <span class="field">cursor</span> }
+    <span class="field">pageInfo</span> { <span class="field">hasNextPage endCursor</span> }
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- Shipping Methods -->
+    <section id="shipping-methods">
+      <h3><span class="method-badge query">Query</span> availableShippingMethods</h3>
+      <p>Get available shipping methods for a channel.</p>
+
+      <div class="code-block">
+        <div class="code-header">Query<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">query</span> <span class="type">AvailableShippingMethods</span>(<span class="var">$channel</span>: <span class="type">String!</span>) {
+  <span class="field">availableShippingMethods</span>(channel: <span class="var">$channel</span>) {
+    <span class="field">id name description</span>
+    <span class="field">price</span> { <span class="field">amount currency</span> }
+    <span class="field">minimumDeliveryDays maximumDeliveryDays</span>
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- Payment Methods -->
+    <section id="payment-methods">
+      <h3><span class="method-badge query">Query</span> availablePaymentMethods</h3>
+      <p>Get available payment methods for a channel.</p>
+
+      <div class="code-block">
+        <div class="code-header">Query<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">query</span> <span class="type">AvailablePaymentMethods</span>(<span class="var">$channel</span>: <span class="type">String!</span>) {
+  <span class="field">availablePaymentMethods</span>(channel: <span class="var">$channel</span>) {
+    <span class="field">id name description provider methodType iconUrl</span>
+    <span class="field">fee</span> { <span class="field">amount currency</span> }
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- ===== MUTATIONS ===== -->
+
+    <!-- Checkout Create -->
+    <section id="checkout-create">
+      <h3><span class="method-badge mutation">Mutation</span> checkoutCreateFull</h3>
+      <p>Create a new checkout session with line items.</p>
+
+      <div class="code-block">
+        <div class="code-header">Mutation<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">mutation</span> <span class="type">CheckoutCreateFull</span>(<span class="var">$input</span>: <span class="type">CheckoutCreateInput!</span>) {
+  <span class="field">checkoutCreateFull</span>(input: <span class="var">$input</span>) {
+    <span class="field">checkout</span> {
+      <span class="field">id token email</span>
+      <span class="field">totalPrice</span> { <span class="field">gross</span> { <span class="field">amount currency</span> } }
+      <span class="field">availableShippingMethods</span> {
+        <span class="field">id name</span>
+        <span class="field">price</span> { <span class="field">amount currency</span> }
+        <span class="field">minimumDeliveryDays maximumDeliveryDays</span>
+      }
+      <span class="field">availablePaymentMethods</span> {
+        <span class="field">id name description provider methodType iconUrl</span>
+        <span class="field">fee</span> { <span class="field">amount currency</span> }
+      }
+    }
+    <span class="field">errors</span> { <span class="field">field message code</span> }
+  }
+}</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">Variables Example<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre>{
+  <span class="field">"input"</span>: {
+    <span class="field">"channel"</span>: <span class="str">"chesaigon"</span>,
+    <span class="field">"email"</span>: <span class="str">"customer@example.com"</span>,
+    <span class="field">"lines"</span>: [
+      { <span class="field">"variantId"</span>: <span class="str">"variant-uuid"</span>, <span class="field">"quantity"</span>: <span class="type">2</span> }
+    ]
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- Checkout Shipping Address -->
+    <section id="checkout-shipping-address">
+      <h3><span class="method-badge mutation">Mutation</span> checkoutShippingAddressUpdate</h3>
+      <p>Update the shipping address. Returns updated shipping price and available methods.</p>
+
+      <div class="code-block">
+        <div class="code-header">Mutation<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">mutation</span> <span class="type">CheckoutShippingAddressUpdate</span>(<span class="var">$input</span>: <span class="type">CheckoutShippingAddressUpdateInput!</span>) {
+  <span class="field">checkoutShippingAddressUpdate</span>(input: <span class="var">$input</span>) {
+    <span class="field">checkout</span> {
+      <span class="field">id</span>
+      <span class="field">shippingPrice</span> { <span class="field">amount currency</span> }
+      <span class="field">totalPrice</span> { <span class="field">gross</span> { <span class="field">amount currency</span> } }
+      <span class="field">availableShippingMethods</span> { <span class="field">id name price</span> { <span class="field">amount currency</span> } }
+    }
+    <span class="field">errors</span> { <span class="field">field message code</span> }
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- Checkout Shipping Method -->
+    <section id="checkout-shipping-method">
+      <h3><span class="method-badge mutation">Mutation</span> checkoutShippingMethodUpdate</h3>
+      <p>Select a shipping method for the checkout.</p>
+
+      <div class="code-block">
+        <div class="code-header">Mutation<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">mutation</span> <span class="type">CheckoutShippingMethodUpdate</span>(<span class="var">$input</span>: <span class="type">CheckoutShippingMethodUpdateInput!</span>) {
+  <span class="field">checkoutShippingMethodUpdate</span>(input: <span class="var">$input</span>) {
+    <span class="field">checkout</span> {
+      <span class="field">id</span>
+      <span class="field">shippingPrice</span> { <span class="field">amount currency</span> }
+      <span class="field">totalPrice</span> { <span class="field">gross</span> { <span class="field">amount currency</span> } }
+      <span class="field">shippingMethod</span> { <span class="field">id name price</span> { <span class="field">amount currency</span> } }
+    }
+    <span class="field">errors</span> { <span class="field">field message code</span> }
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- Checkout Note -->
+    <section id="checkout-note">
+      <h3><span class="method-badge mutation">Mutation</span> checkoutNoteUpdate</h3>
+      <p>Add delivery instructions or order notes.</p>
+
+      <div class="code-block">
+        <div class="code-header">Mutation<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">mutation</span> <span class="type">CheckoutNoteUpdate</span>(<span class="var">$input</span>: <span class="type">CheckoutNoteUpdateInput!</span>) {
+  <span class="field">checkoutNoteUpdate</span>(input: <span class="var">$input</span>) {
+    <span class="field">checkout</span> { <span class="field">id</span> }
+    <span class="field">errors</span> { <span class="field">field message</span> }
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- Promo Code Add -->
+    <section id="checkout-promo-add">
+      <h3><span class="method-badge mutation">Mutation</span> checkoutPromoCodeAdd</h3>
+      <p>Apply a promo or voucher code to the checkout.</p>
+
+      <div class="code-block">
+        <div class="code-header">Mutation<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">mutation</span> <span class="type">CheckoutPromoCodeAdd</span>(<span class="var">$checkoutId</span>: <span class="type">ID!</span>, <span class="var">$promoCode</span>: <span class="type">String!</span>) {
+  <span class="field">checkoutPromoCodeAdd</span>(checkoutId: <span class="var">$checkoutId</span>, promoCode: <span class="var">$promoCode</span>) {
+    <span class="field">checkout</span> {
+      <span class="field">id</span>
+      <span class="field">discount</span> { <span class="field">amount currency</span> }
+      <span class="field">totalPrice</span> { <span class="field">gross</span> { <span class="field">amount currency</span> } }
+    }
+    <span class="field">errors</span> { <span class="field">field message code</span> }
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- Promo Code Remove -->
+    <section id="checkout-promo-remove">
+      <h3><span class="method-badge mutation">Mutation</span> checkoutPromoCodeRemove</h3>
+      <p>Remove applied promo code from checkout.</p>
+
+      <div class="code-block">
+        <div class="code-header">Mutation<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">mutation</span> <span class="type">CheckoutPromoCodeRemove</span>(<span class="var">$checkoutId</span>: <span class="type">ID!</span>) {
+  <span class="field">checkoutPromoCodeRemove</span>(checkoutId: <span class="var">$checkoutId</span>) {
+    <span class="field">checkout</span> {
+      <span class="field">id</span>
+      <span class="field">totalPrice</span> { <span class="field">gross</span> { <span class="field">amount currency</span> } }
+    }
+    <span class="field">errors</span> { <span class="field">field message</span> }
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- Checkout Payment -->
+    <section id="checkout-payment">
+      <h3><span class="method-badge mutation">Mutation</span> checkoutPaymentCreate</h3>
+      <p>Create a payment for the checkout. Returns payment gateway details.</p>
+
+      <div class="code-block">
+        <div class="code-header">Mutation<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">mutation</span> <span class="type">CheckoutPaymentCreate</span>(<span class="var">$checkoutId</span>: <span class="type">ID!</span>, <span class="var">$input</span>: <span class="type">PaymentInput!</span>) {
+  <span class="field">checkoutPaymentCreate</span>(checkoutId: <span class="var">$checkoutId</span>, input: <span class="var">$input</span>) {
+    <span class="field">payment</span> {
+      <span class="field">id gateway status</span>
+      <span class="field">clientSecret</span>  <span class="comment"># For Stripe</span>
+      <span class="field">actionUrl</span>     <span class="comment"># Redirect URL for P24/BLIK</span>
+    }
+    <span class="field">errors</span> { <span class="field">field message</span> }
+  }
+}</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">Variables Example<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre>{
+  <span class="field">"checkoutId"</span>: <span class="str">"checkout-uuid"</span>,
+  <span class="field">"input"</span>: {
+    <span class="field">"gateway"</span>: <span class="str">"stripe"</span>,
+    <span class="field">"returnUrl"</span>: <span class="str">"https://shop.example.com/checkout/confirmation"</span>
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- Checkout Complete -->
+    <section id="checkout-complete">
+      <h3><span class="method-badge mutation">Mutation</span> checkoutComplete</h3>
+      <p>Finalize the checkout and create an order.</p>
+
+      <div class="code-block">
+        <div class="code-header">Mutation<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">mutation</span> <span class="type">CheckoutComplete</span>(<span class="var">$input</span>: <span class="type">CheckoutCompleteInput!</span>) {
+  <span class="field">checkoutComplete</span>(input: <span class="var">$input</span>) {
+    <span class="field">order</span> {
+      <span class="field">id number status createdAt</span>
+      <span class="field">total</span> { <span class="field">gross</span> { <span class="field">amount currency</span> } }
+    }
+    <span class="field">confirmationNeeded</span>
+    <span class="field">errors</span> { <span class="field">field message code</span> }
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- ===== REFERENCE ===== -->
+
+    <!-- Types -->
+    <section id="types">
+      <h2>Types</h2>
+      <p>Core TypeScript interfaces used by the storefront.</p>
+
+      <div class="code-block">
+        <div class="code-header">GroceryProduct<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">interface</span> <span class="type">GroceryProduct</span> {
+  <span class="field">id</span>: <span class="type">string</span>
+  <span class="field">name</span>: <span class="type">string</span>
+  <span class="field">slug</span>: <span class="type">string</span>
+  <span class="field">description</span>?: <span class="type">string</span>
+  <span class="field">thumbnail</span>?: { <span class="field">url</span>: <span class="type">string</span>; <span class="field">alt</span>?: <span class="type">string</span> }
+  <span class="field">category</span>?: { <span class="field">id</span>: <span class="type">string</span>; <span class="field">name</span>: <span class="type">string</span>; <span class="field">slug</span>: <span class="type">string</span> }
+  <span class="field">variants</span>: <span class="type">ProductVariant[]</span>
+  <span class="field">price</span>: <span class="type">number</span>
+  <span class="field">currency</span>: <span class="type">string</span>
+  <span class="field">stockQuantity</span>: <span class="type">number</span>
+
+  <span class="comment">// Food-specific</span>
+  <span class="field">allergens</span>?: <span class="type">string[]</span>          <span class="comment">// e.g. ["peanuts","milk","gluten"]</span>
+  <span class="field">dietaryTags</span>?: <span class="type">string[]</span>        <span class="comment">// e.g. ["vegan","halal"]</span>
+  <span class="field">calories</span>?: <span class="type">number</span>
+  <span class="field">spiceLevel</span>?: <span class="type">number</span>
+  <span class="field">isAlcohol</span>?: <span class="type">boolean</span>
+  <span class="field">countryOfOrigin</span>?: <span class="type">string</span>
+  <span class="field">sellByWeight</span>?: <span class="type">boolean</span>
+  <span class="field">pricePerUnit</span>?: <span class="type">number</span>
+  <span class="field">unitOfMeasure</span>?: <span class="type">string</span>
+  <span class="field">storageZone</span>?: <span class="type">StorageZone</span>     <span class="comment">// FROZEN | CHILLED | AMBIENT</span>
+  <span class="field">ingredients</span>?: <span class="type">string</span>
+  <span class="field">nutritionFacts</span>?: <span class="type">NutritionFacts</span>
+  <span class="field">certifications</span>?: <span class="type">string[]</span>     <span class="comment">// e.g. ["organic","kosher"]</span>
+  <span class="field">freshness</span>?: <span class="type">Freshness</span>          <span class="comment">// FRESH | EXPIRING_SOON | LAST_CHANCE</span>
+  <span class="field">nearestExpiry</span>?: <span class="type">string</span>        <span class="comment">// ISO date of nearest lot expiry</span>
+}</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">NutritionFacts<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">interface</span> <span class="type">NutritionFacts</span> {
+  <span class="field">calories</span>?: <span class="type">number</span>       <span class="comment">// kcal</span>
+  <span class="field">fat</span>?: <span class="type">number</span>            <span class="comment">// grams</span>
+  <span class="field">saturatedFat</span>?: <span class="type">number</span>   <span class="comment">// grams</span>
+  <span class="field">carbs</span>?: <span class="type">number</span>          <span class="comment">// grams</span>
+  <span class="field">sugar</span>?: <span class="type">number</span>          <span class="comment">// grams</span>
+  <span class="field">fiber</span>?: <span class="type">number</span>          <span class="comment">// grams</span>
+  <span class="field">protein</span>?: <span class="type">number</span>        <span class="comment">// grams</span>
+  <span class="field">salt</span>?: <span class="type">number</span>           <span class="comment">// grams</span>
+  <span class="field">servingSize</span>?: <span class="type">string</span>    <span class="comment">// e.g. "100g"</span>
+}</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">Recipe<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">interface</span> <span class="type">Recipe</span> {
+  <span class="field">id</span>: <span class="type">string</span>
+  <span class="field">name</span>: <span class="type">string</span>
+  <span class="field">slug</span>: <span class="type">string</span>
+  <span class="field">description</span>?: <span class="type">string</span>
+  <span class="field">thumbnail</span>?: { <span class="field">url</span>: <span class="type">string</span>; <span class="field">alt</span>?: <span class="type">string</span> }
+  <span class="field">servings</span>: <span class="type">number</span>
+  <span class="field">prepTime</span>?: <span class="type">number</span>       <span class="comment">// minutes</span>
+  <span class="field">cookTime</span>?: <span class="type">number</span>       <span class="comment">// minutes</span>
+  <span class="field">totalTime</span>?: <span class="type">number</span>
+  <span class="field">difficulty</span>?: <span class="type">Difficulty</span>  <span class="comment">// EASY | MEDIUM | HARD</span>
+  <span class="field">steps</span>: { <span class="field">stepNumber</span>: <span class="type">number</span>; <span class="field">instruction</span>: <span class="type">string</span>; <span class="field">image</span>?: { <span class="field">url alt</span> } }<span class="type">[]</span>
+  <span class="field">ingredients</span>: <span class="type">RecipeIngredient[]</span>
+}</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">CheckoutFormData (Zod Schema)<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">interface</span> <span class="type">CheckoutFormData</span> {
+  <span class="field">firstName</span>: <span class="type">string</span>          <span class="comment">// required</span>
+  <span class="field">lastName</span>: <span class="type">string</span>           <span class="comment">// required</span>
+  <span class="field">email</span>: <span class="type">string</span>              <span class="comment">// required, valid email</span>
+  <span class="field">phone</span>?: <span class="type">string</span>
+  <span class="field">streetAddress1</span>: <span class="type">string</span>    <span class="comment">// required</span>
+  <span class="field">city</span>: <span class="type">string</span>               <span class="comment">// required</span>
+  <span class="field">postalCode</span>: <span class="type">string</span>         <span class="comment">// required</span>
+  <span class="field">shippingMethodId</span>: <span class="type">string</span>   <span class="comment">// required</span>
+  <span class="field">paymentMethodId</span>: <span class="type">string</span>    <span class="comment">// required</span>
+  <span class="field">note</span>?: <span class="type">string</span>
+}</pre>
+      </div>
+    </section>
+
+    <!-- Enums -->
+    <section id="enums">
+      <h2>Enums</h2>
+      <p>Enumerated types used across the API.</p>
+
+      <div class="enum-grid">
+        <div class="enum-card">
+          <h4>StorageZone</h4>
+          <code>FROZEN</code>
+          <code>CHILLED</code>
+          <code>AMBIENT</code>
+        </div>
+        <div class="enum-card">
+          <h4>Freshness</h4>
+          <code>FRESH</code>
+          <code>EXPIRING_SOON</code>
+          <code>LAST_CHANCE</code>
+        </div>
+        <div class="enum-card">
+          <h4>Difficulty</h4>
+          <code>EASY</code>
+          <code>MEDIUM</code>
+          <code>HARD</code>
+        </div>
+        <div class="enum-card">
+          <h4>ProductOrderField</h4>
+          <code>NAME</code>
+          <code>PRICE</code>
+          <code>CREATED</code>
+          <code>UPDATED</code>
+          <code>RATING</code>
+        </div>
+        <div class="enum-card">
+          <h4>SortDirection</h4>
+          <code>ASC</code>
+          <code>DESC</code>
+        </div>
+        <div class="enum-card">
+          <h4>UnitOfMeasure</h4>
+          <code>kg &bull; g &bull; l &bull; ml &bull; pcs</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filtering -->
+    <section id="filtering">
+      <h2>Filtering & Sorting</h2>
+      <p>Product queries support rich filtering and sorting options.</p>
+
+      <h3>ProductFilterInput</h3>
+      <table>
+        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+        <tr><td><code>search</code></td><td><code>String</code></td><td>Full-text search on name and description</td></tr>
+        <tr><td><code>excludeAllergens</code></td><td><code>[String]</code></td><td>Exclude products containing these allergens</td></tr>
+        <tr><td><code>dietaryTags</code></td><td><code>[String]</code></td><td>Filter by dietary tags (vegan, halal, etc.)</td></tr>
+        <tr><td><code>certifications</code></td><td><code>[String]</code></td><td>Filter by certifications (organic, kosher)</td></tr>
+        <tr><td><code>storageZone</code></td><td><code>StorageZone</code></td><td>Filter by storage temperature zone</td></tr>
+      </table>
+
+      <h3>ProductOrder (Sorting)</h3>
+      <div class="code-block">
+        <div class="code-header">Example<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre>{
+  <span class="field">"sortBy"</span>: {
+    <span class="field">"field"</span>: <span class="str">"PRICE"</span>,     <span class="comment">// NAME | PRICE | CREATED | UPDATED | RATING</span>
+    <span class="field">"direction"</span>: <span class="str">"ASC"</span>    <span class="comment">// ASC | DESC</span>
+  }
+}</pre>
+      </div>
+    </section>
+
+    <!-- REST API -->
+    <section id="rest-api">
+      <h2>REST API</h2>
+      <p>Additional REST endpoint used by the storefront.</p>
+
+      <h3><span class="method-badge rest">GET</span> /api/v1/public/salon/{slug}</h3>
+      <p>Fetch basic salon/shop information. Used to initialize the storefront.</p>
+
+      <div class="code-block">
+        <div class="code-header">Request<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">GET</span> <span class="str">https://chesaigon.eshoper.pro/api/v1/public/salon/chesaigon</span></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">Response<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre>{
+  <span class="field">"id"</span>: <span class="str">"uuid"</span>,
+  <span class="field">"name"</span>: <span class="str">"Che Sai Gon"</span>,
+  <span class="field">"slug"</span>: <span class="str">"chesaigon"</span>,
+  <span class="field">"currency"</span>: <span class="str">"PLN"</span>,
+  <span class="field">"timezone"</span>: <span class="str">"Europe/Warsaw"</span>,
+  <span class="field">"businessCategory"</span>: <span class="str">"grocery"</span>
+}</pre>
+      </div>
+    </section>
+
+    <footer style="border-top:1px solid var(--border);padding-top:24px;margin-top:48px;color:var(--text-muted);font-size:13px;">
+      <p>Grocery Storefront API Documentation &bull; Built with eNail/Zira AI Platform</p>
+      <p style="margin-top:4px;">Last updated: March 2026</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  });
+}
+</script>
+</body>
+</html>
