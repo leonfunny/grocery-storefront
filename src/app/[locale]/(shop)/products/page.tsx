@@ -63,7 +63,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const urlSearch = searchParams.get('search') || '';
     if (urlSearch !== search) setSearch(urlSearch);
-  }, [searchParams]);
+  }, [searchParams, search]);
 
   const sortOption = SORT_OPTIONS.find((o) => o.value === sort) || SORT_OPTIONS[0];
 
@@ -311,8 +311,8 @@ export default function ProductsPage() {
       ) : loadedProducts.length > 0 ? (
         <>
           <div className="product-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {loadedProducts.map((product: any) => (
-              <ProductCard key={product.id} product={product} />
+            {loadedProducts.map((product: any, index: number) => (
+              <ProductCard key={product.id} product={product} imagePriority={index < 4} />
             ))}
           </div>
 

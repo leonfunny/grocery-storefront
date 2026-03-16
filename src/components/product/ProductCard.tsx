@@ -15,9 +15,10 @@ import type { GroceryProduct } from '@/types';
 
 interface ProductCardProps {
   product: GroceryProduct;
+  imagePriority?: boolean;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, imagePriority = false }: ProductCardProps) {
   const locale = useLocale();
   const t = useTranslations();
   const addItem = useCartStore((s) => s.addItem);
@@ -72,24 +73,35 @@ export function ProductCard({ product }: ProductCardProps) {
 
     if (!variant) return;
 
-    if (isWishlisted) {
-      removeWishlistItem(product.id);
-      toast.success(t('wishlist.removeSuccess'));
-      return;
-    }
+    void (async () => {
+      if (isWishlisted) {
+        const success = await removeWishlistItem(product.id);
+        if (success) {
+          toast.success(t('wishlist.removeSuccess'));
+        } else {
+          toast.error(t('common.error'));
+        }
+        return;
+      }
 
-    addWishlistItem({
-      productId: product.id,
-      variantId: variant.id,
-      slug: product.slug,
-      name: product.name,
-      thumbnail: imageUrl || undefined,
-      price,
-      currency,
-      quantity,
-      storageZone: product.storageZone,
-    });
-    toast.success(t('wishlist.addSuccess'));
+      const success = await addWishlistItem({
+        productId: product.id,
+        variantId: variant.id,
+        slug: product.slug,
+        name: product.name,
+        thumbnail: imageUrl || undefined,
+        price,
+        currency,
+        quantity,
+        storageZone: product.storageZone,
+      });
+
+      if (success) {
+        toast.success(t('wishlist.addSuccess'));
+      } else {
+        toast.error(t('common.error'));
+      }
+    })();
   }
 
   function handleNutritionClick(e: React.MouseEvent) {
@@ -112,6 +124,7 @@ export function ProductCard({ product }: ProductCardProps) {
               src={imageUrl}
               alt=""
               fill
+              priority={imagePriority}
               className="object-cover group-hover:scale-105 transition-transform duration-slow"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               unoptimized={isImageProxySrc(imageUrl)}

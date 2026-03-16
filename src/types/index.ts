@@ -146,6 +146,36 @@ export interface WishlistItem {
   addedAt: string;
 }
 
+export type AuthStatus = 'loading' | 'authenticated' | 'guest';
+
+export interface CustomerProfile {
+  id: string;
+  email: string;
+  fullName: string;
+  phone?: string | null;
+  createdAt?: string;
+}
+
+export interface AuthError {
+  field?: string | null;
+  message: string;
+  code?: string | null;
+}
+
+export interface AuthSession {
+  token: string | null;
+  user: CustomerProfile | null;
+  status: AuthStatus;
+}
+
+export interface WishlistServerItem {
+  productId: string;
+  variantId: string;
+  addedAt: string;
+  name?: string | null;
+  price?: number | null;
+}
+
 export interface Salon {
   id: string;
   name: string;

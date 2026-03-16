@@ -20,7 +20,10 @@
     "wishlist": "Ulubione",
     "cart": "Do kasy",
     "account": "Konto",
-    "searchPlaceholder": "Szukaj produktów, przepisów..."
+    "searchPlaceholder": "Szukaj produktów, przepisów...",
+    "login": "Zaloguj się",
+    "register": "Zarejestruj się",
+    "logout": "Wyloguj"
   },
   "search": {
     "recentSearches": "Ostatnie wyszukiwania",
@@ -255,5 +258,37 @@
     "termsDeliveryContent": "Dostarczamy na adresy w obszarze naszej obsługi. Terminy dostawy są szacunkowe i mogą się różnić. Nie ponosimy odpowiedzialności za opóźnienia spowodowane okolicznościami niezależnymi od nas.",
     "termsReturnsTitle": "Zwroty i refundacje",
     "termsReturnsContent": "Jeśli otrzymasz uszkodzone lub nieprawidłowe produkty, prosimy o kontakt w ciągu 24 godzin. Zorganizujemy wymianę lub zwrot środków. Produkty łatwo psujące się nie podlegają zwrotowi, chyba że są wadliwe."
+  },
+  "auth": {
+    "eyebrowLogin": "Logowanie",
+    "eyebrowRegister": "Nowe konto",
+    "loginTitle": "Witaj ponownie",
+    "loginSubtitle": "Zaloguj się, aby korzystać z konta na tym urządzeniu.",
+    "registerTitle": "Załóż konto",
+    "registerSubtitle": "Załóż konto, aby kontynuować zakupy na tym urządzeniu.",
+    "fullName": "Imię i nazwisko",
+    "fullNamePlaceholder": "Jan Kowalski",
+    "fullNameRequired": "Podaj imię i nazwisko",
+    "email": "E-mail",
+    "emailPlaceholder": "ty@example.com",
+    "emailRequired": "Podaj adres e-mail",
+    "password": "Hasło",
+    "passwordPlaceholder": "Minimum 8 znaków",
+    "passwordRequired": "Podaj hasło",
+    "confirmPassword": "Potwierdź hasło",
+    "confirmPasswordPlaceholder": "Powtórz hasło",
+    "passwordMismatch": "Hasła nie są takie same",
+    "passwordMin": "Hasło musi mieć co najmniej 8 znaków",
+    "passwordHint": "Użyj co najmniej 8 znaków.",
+    "loginButton": "Zaloguj się",
+    "registerButton": "Załóż konto",
+    "submitting": "Trwa zapis...",
+    "switchToRegisterPrompt": "Nie masz konta?",
+    "switchToRegisterAction": "Zarejestruj się",
+    "switchToLoginPrompt": "Masz już konto?",
+    "switchToLoginAction": "Zaloguj się",
+    "loginSuccess": "Zalogowano pomyślnie",
+    "registerSuccess": "Konto zostało utworzone",
+    "logoutSuccess": "Wylogowano pomyślnie"
   }
 }

@@ -163,8 +163,8 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {saleProducts.map((product: any) => (
-              <ProductCard key={product.id} product={product} />
+            {saleProducts.map((product: any, index: number) => (
+              <ProductCard key={product.id} product={product} imagePriority={index < 2} />
             ))}
           </div>
         </section>
@@ -197,8 +197,8 @@ export default function HomePage() {
           </div>
         ) : products.length > 0 ? (
           <div className="product-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {products.map((product: any) => (
-              <ProductCard key={product.id} product={product} />
+            {products.map((product: any, index: number) => (
+              <ProductCard key={product.id} product={product} imagePriority={index < 4} />
             ))}
           </div>
         ) : (

@@ -200,6 +200,138 @@ export const PRODUCT_RECIPES_QUERY = `
   }
 `;
 
+// --- Customer auth + wishlist ---
+
+export const ME_QUERY = `
+  query Me {
+    me {
+      id
+      email
+      fullName
+      phone
+      createdAt
+    }
+  }
+`;
+
+export const CUSTOMER_LOGIN_MUTATION = `
+  mutation CustomerLogin($input: LoginInput!) {
+    customerLogin(input: $input) {
+      accessToken
+      refreshToken
+      success
+      message
+      customer {
+        id
+        email
+        fullName
+        phone
+        createdAt
+      }
+      errors {
+        field
+        message
+        code
+      }
+    }
+  }
+`;
+
+export const CUSTOMER_REGISTER_MUTATION = `
+  mutation CustomerRegister($input: RegisterInput!) {
+    customerRegister(input: $input) {
+      accessToken
+      refreshToken
+      success
+      message
+      customer {
+        id
+        email
+        fullName
+        phone
+        createdAt
+      }
+      errors {
+        field
+        message
+        code
+      }
+    }
+  }
+`;
+
+export const REFRESH_TOKEN_MUTATION = `
+  mutation RefreshToken($input: TokenRefreshInput!) {
+    refreshToken(input: $input) {
+      success
+      accessToken
+      refreshToken
+      expiresIn
+      message
+    }
+  }
+`;
+
+export const LOGOUT_MUTATION = `
+  mutation Logout {
+    logout {
+      success
+      message
+    }
+  }
+`;
+
+export const WISHLIST_QUERY = `
+  query Wishlist {
+    wishlist {
+      items {
+        productId
+        variantId
+        addedAt
+        name
+        price
+      }
+    }
+  }
+`;
+
+export const WISHLIST_SYNC_MUTATION = `
+  mutation WishlistSync($productIds: [ID!]!) {
+    wishlistSync(productIds: $productIds) {
+      success
+      message
+      items {
+        productId
+        variantId
+        addedAt
+        name
+        price
+      }
+    }
+  }
+`;
+
+export const WISHLIST_PRODUCT_FIELDS = `
+  fragment WishlistProductFields on Product {
+    id
+    name
+    slug
+    thumbnail { url alt }
+    storageZone
+    pricing {
+      priceRange {
+        start { gross { amount currency } }
+      }
+    }
+    variants {
+      id
+      name
+      pricing { price { gross { amount currency } } }
+      quantityAvailable
+    }
+  }
+`;
+
 // --- Checkout mutations ---
 
 export const CHECKOUT_CREATE_MUTATION = `

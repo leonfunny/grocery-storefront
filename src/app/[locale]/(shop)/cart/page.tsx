@@ -25,8 +25,8 @@ export default function CartPage() {
   const itemsByZone = isHydrated ? getItemsByZone() : {};
   const hasZones = Object.keys(itemsByZone).length > 1 || !itemsByZone['OTHER'];
 
-  function handleSaveForLater(item: CartItem) {
-    addWishlistItem({
+  async function handleSaveForLater(item: CartItem) {
+    const success = await addWishlistItem({
       productId: item.productId,
       variantId: item.variantId,
       slug: item.slug,
@@ -37,6 +37,11 @@ export default function CartPage() {
       quantity: item.quantity,
       storageZone: item.storageZone,
     });
+    if (!success) {
+      toast.error(tCommon('error'));
+      return;
+    }
+
     removeItem(item.variantId);
     toast.success(tWishlist('savedForLater'));
   }
@@ -74,7 +79,7 @@ export default function CartPage() {
           </p>
           <button
             type="button"
-            onClick={() => handleSaveForLater(item)}
+            onClick={() => void handleSaveForLater(item)}
             className="inline-flex items-center gap-1.5 mt-1.5 text-xs font-medium transition-opacity duration-fast hover:opacity-80"
             style={{ color: 'var(--color-primary)' }}
           >

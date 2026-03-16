@@ -1,5 +1,5 @@
 import { createClient, cacheExchange, fetchExchange } from 'urql';
-import Cookies from 'js-cookie';
+import { getAuthToken } from '@/lib/auth';
 
 function getGraphqlUrl(): string {
   if (typeof window !== 'undefined') {
@@ -19,7 +19,7 @@ export function getUrqlClient() {
     url: getGraphqlUrl(),
     exchanges: [cacheExchange, fetchExchange],
     fetchOptions: () => {
-      const token = Cookies.get('grocery_token');
+      const token = getAuthToken();
       const headers: Record<string, string> = {};
       if (token) headers.Authorization = `Bearer ${token}`;
       return { headers, method: 'POST' };

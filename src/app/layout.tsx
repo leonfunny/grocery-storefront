@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 import { GraphQLProvider } from '@/lib/graphql/provider';
 import { SalonLoader } from '@/components/SalonLoader';
+import { SessionBootstrap } from '@/components/SessionBootstrap';
 import { AppToaster } from '@/components/layout/AppToaster';
 import './globals.css';
 
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
         <GraphQLProvider>
           {!process.env.NEXT_PUBLIC_CHANNEL && <SalonLoader />}
+          <SessionBootstrap />
           {children}
         </GraphQLProvider>
         <AppToaster />

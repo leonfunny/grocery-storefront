@@ -17,6 +17,7 @@ export default function WishlistPage() {
   const addCartItem = useCartStore((state) => state.addItem);
   const items = useWishlistStore((state) => state.items);
   const removeItem = useWishlistStore((state) => state.removeItem);
+  const isLoading = useWishlistStore((state) => state.isLoading);
   const displayItems = isHydrated ? items : [];
 
   function handleAddToCart(productId: string) {
@@ -34,10 +35,11 @@ export default function WishlistPage() {
       quantity: item.quantity,
       storageZone: item.storageZone,
     });
+    void removeItem(item.productId);
     toast.success(t('movedToCart'));
   }
 
-  if (!isHydrated) {
+  if (!isHydrated || (isLoading && displayItems.length === 0)) {
     return (
       <div className="container-grocery py-16 text-center">
         <Heart className="w-16 h-16 mx-auto mb-4 opacity-20" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
@@ -169,7 +171,7 @@ export default function WishlistPage() {
 
                   <button
                     type="button"
-                    onClick={() => removeItem(item.productId)}
+                    onClick={() => void removeItem(item.productId)}
                     className="h-11 rounded-xl border flex items-center justify-center transition-colors duration-fast hover-surface"
                     style={{ borderColor: 'var(--color-border)', color: 'var(--color-muted-foreground)' }}
                     aria-label={`${t('remove')} ${item.name}`}
