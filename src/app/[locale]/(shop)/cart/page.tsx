@@ -1,30 +1,55 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, Trash2, Minus, Plus, Package, ArrowRight, Truck } from 'lucide-react';
+import { ShoppingCart, Trash2, Minus, Plus, Package, ArrowRight, Truck, Heart } from 'lucide-react';
+import { toast } from 'sonner';
 import { useCartStore } from '@/stores/cart-store';
+import { useWishlistStore } from '@/stores/wishlist-store';
 import { StorageZoneGroup } from '@/components/grocery/StorageZoneGroup';
-import { formatPrice } from '@/lib/utils';
+import { Link } from '@/i18n/navigation';
+import { useHydrated } from '@/hooks/use-hydrated';
+import { formatPrice, getImageSrc, isImageProxySrc } from '@/lib/utils';
 import type { CartItem } from '@/types';
 
 export default function CartPage() {
   const t = useTranslations('cart');
   const tCommon = useTranslations('common');
+  const tWishlist = useTranslations('wishlist');
+  const isHydrated = useHydrated();
   const { items, removeItem, updateQuantity, getSubtotal, getItemsByZone } = useCartStore();
+  const addWishlistItem = useWishlistStore((state) => state.addItem);
 
-  const subtotal = getSubtotal();
-  const itemsByZone = getItemsByZone();
+  const displayItems = isHydrated ? items : [];
+  const subtotal = isHydrated ? getSubtotal() : 0;
+  const itemsByZone = isHydrated ? getItemsByZone() : {};
   const hasZones = Object.keys(itemsByZone).length > 1 || !itemsByZone['OTHER'];
 
+  function handleSaveForLater(item: CartItem) {
+    addWishlistItem({
+      productId: item.productId,
+      variantId: item.variantId,
+      slug: item.slug,
+      name: item.name,
+      thumbnail: item.thumbnail,
+      price: item.price,
+      currency: item.currency,
+      quantity: item.quantity,
+      storageZone: item.storageZone,
+    });
+    removeItem(item.variantId);
+    toast.success(tWishlist('savedForLater'));
+  }
+
   function renderCartItem(item: CartItem) {
+    const imageUrl = getImageSrc(item.thumbnail);
+
     return (
       <div key={item.variantId} className="flex items-center gap-3 px-4 py-3" style={{ backgroundColor: 'var(--color-card)' }}>
         {/* Thumbnail */}
         <div className="shrink-0 w-14 h-14 rounded-lg overflow-hidden" style={{ backgroundColor: 'var(--color-muted)' }}>
-          {item.thumbnail ? (
-            <Image src={item.thumbnail} alt="" width={56} height={56} className="object-cover w-full h-full" />
+          {imageUrl ? (
+            <Image src={imageUrl} alt="" width={56} height={56} className="object-cover w-full h-full" unoptimized={isImageProxySrc(imageUrl)} />
           ) : (
             <div className="flex items-center justify-center h-full">
               <Package className="w-5 h-5 opacity-30" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
@@ -47,6 +72,15 @@ export default function CartPage() {
           <p className="text-sm tabular-nums mt-0.5" style={{ color: 'var(--color-muted-foreground)' }}>
             {formatPrice(item.price, item.currency)}
           </p>
+          <button
+            type="button"
+            onClick={() => handleSaveForLater(item)}
+            className="inline-flex items-center gap-1.5 mt-1.5 text-xs font-medium transition-opacity duration-fast hover:opacity-80"
+            style={{ color: 'var(--color-primary)' }}
+          >
+            <Heart className="w-3.5 h-3.5" aria-hidden="true" />
+            {tWishlist('saveForLater')}
+          </button>
         </div>
 
         {/* Quantity — 44px touch targets */}
@@ -90,7 +124,16 @@ export default function CartPage() {
     );
   }
 
-  if (items.length === 0) {
+  if (!isHydrated) {
+    return (
+      <div className="container-grocery py-16 text-center">
+        <ShoppingCart className="w-16 h-16 mx-auto mb-4 opacity-20" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
+        <h1 className="heading-display text-xl mb-2" style={{ color: 'var(--color-foreground)' }}>{tCommon('loading')}</h1>
+      </div>
+    );
+  }
+
+  if (displayItems.length === 0) {
     return (
       <div className="container-grocery py-16 text-center">
         <ShoppingCart className="w-16 h-16 mx-auto mb-4 opacity-20" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
@@ -112,7 +155,7 @@ export default function CartPage() {
       <h1 className="heading-display text-2xl md:text-3xl mb-6" style={{ color: 'var(--color-foreground)' }}>
         {t('title')}
         <span className="text-base font-normal ml-2 tabular-nums" style={{ color: 'var(--color-muted-foreground)' }}>
-          ({items.length})
+          ({displayItems.length})
         </span>
       </h1>
 
@@ -124,7 +167,7 @@ export default function CartPage() {
           ) : (
             <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
               <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
-                {items.map(renderCartItem)}
+                {displayItems.map(renderCartItem)}
               </div>
             </div>
           )}
@@ -187,7 +230,7 @@ export default function CartPage() {
 
             <Link
               href="/checkout"
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-white transition-all duration-fast active:scale-[0.98]"
+              className="checkout-btn flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-white transition-all duration-fast active:scale-[0.98]"
               style={{ backgroundColor: 'var(--color-primary)' }}
             >
               {t('checkout')}

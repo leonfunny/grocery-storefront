@@ -1,13 +1,13 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
 import { useQuery } from 'urql';
 import { Snowflake, Thermometer, Sun, ChevronRight, Leaf, Percent } from 'lucide-react';
 import { PRODUCTS_QUERY, RECIPES_QUERY } from '@/lib/graphql/operations/grocery';
 import { ProductCard } from '@/components/product/ProductCard';
 import { RecipeCard } from '@/components/grocery/RecipeCard';
 import { PromoBanner } from '@/components/grocery/PromoBanner';
+import { Link } from '@/i18n/navigation';
 import { useChannel } from '@/hooks/use-channel';
 
 const ZONE_CARDS = [

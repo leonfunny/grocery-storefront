@@ -5,7 +5,7 @@
     "retry": "Spróbuj ponownie",
     "search": "Szukaj",
     "noResults": "Brak wyników",
-    "addToCart": "Dodaj do koszyka",
+    "addToCart": "do koszyka",
     "viewAll": "Zobacz wszystkie",
     "back": "Wstecz",
     "close": "Zamknij",
@@ -17,9 +17,18 @@
     "home": "Strona główna",
     "products": "Produkty",
     "recipes": "Przepisy",
-    "cart": "Koszyk",
+    "wishlist": "Ulubione",
+    "cart": "Do kasy",
     "account": "Konto",
     "searchPlaceholder": "Szukaj produktów, przepisów..."
+  },
+  "search": {
+    "recentSearches": "Ostatnie wyszukiwania",
+    "suggestions": "Sugestie",
+    "resultsFor": "Wyniki dla: {query}",
+    "seeResults": "Zobacz wyniki dla \"{query}\"",
+    "clearRecent": "Wyczyść",
+    "noMatches": "Brak dopasowanych produktów"
   },
   "home": {
     "hero": "Świeże produkty, prosto do Twoich drzwi",
@@ -92,6 +101,20 @@
       "expiringSoon": "Termin mija",
       "lastChance": "Ostatnia szansa"
     }
+  },
+  "wishlist": {
+    "title": "Ulubione",
+    "subtitle": "Zachowaj produkty na kolejne zakupy.",
+    "empty": "Lista ulubionych jest pusta",
+    "emptyDesc": "Zapisuj produkty tutaj, aby szybciej wracać do nich później.",
+    "shopNow": "Przeglądaj produkty",
+    "add": "Dodaj do ulubionych",
+    "remove": "Usuń z ulubionych",
+    "addSuccess": "Dodano do ulubionych",
+    "removeSuccess": "Usunięto z ulubionych",
+    "saveForLater": "Zapisz na później",
+    "savedForLater": "Produkt zapisany na później",
+    "movedToCart": "Produkt dodany do koszyka"
   },
   "recipes": {
     "title": "Przepisy",

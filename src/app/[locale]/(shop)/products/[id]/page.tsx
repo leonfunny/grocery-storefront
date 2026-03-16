@@ -14,7 +14,7 @@ import { NutritionModal } from '@/components/grocery/NutritionModal';
 import { RecipeCard } from '@/components/grocery/RecipeCard';
 import { Breadcrumb } from '@/components/grocery/Breadcrumb';
 import { useCartStore } from '@/stores/cart-store';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getImageSrc, isImageProxySrc } from '@/lib/utils';
 import { useChannel } from '@/hooks/use-channel';
 
 function DetailSkeleton() {
@@ -78,6 +78,7 @@ export default function ProductDetailPage() {
   const price = variant?.pricing?.price?.gross?.amount ?? 0;
   const currency = variant?.pricing?.price?.gross?.currency ?? 'PLN';
   const inStock = (variant?.quantityAvailable ?? 0) > 0;
+  const imageUrl = getImageSrc(product?.thumbnail?.url);
 
   function handleAddToCart() {
     if (!variant || !inStock) return;
@@ -110,8 +111,8 @@ export default function ProductDetailPage() {
       <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
         {/* Image */}
         <div className="relative aspect-square rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--color-muted)' }}>
-          {product.thumbnail?.url ? (
-            <Image src={product.thumbnail.url} alt={product.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" priority />
+          {imageUrl ? (
+            <Image src={imageUrl} alt={product.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" priority unoptimized={isImageProxySrc(imageUrl)} />
           ) : (
             <div className="flex items-center justify-center h-full">
               <Package className="w-16 h-16 opacity-20" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
@@ -231,7 +232,7 @@ export default function ProductDetailPage() {
               type="button"
               onClick={handleAddToCart}
               disabled={!inStock}
-              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white transition-all duration-fast disabled:opacity-50 active:scale-[0.98]"
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white transition-all duration-fast disabled:opacity-50 active:scale-[0.98] hover:brightness-90 hover:shadow-md"
               style={{
                 backgroundColor: justAdded ? 'var(--color-fresh)' : 'var(--color-primary)',
               }}

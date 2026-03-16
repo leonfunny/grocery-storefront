@@ -19,7 +19,8 @@
     "recipes": "Рецепти",
     "cart": "Кошик",
     "account": "Акаунт",
-    "searchPlaceholder": "Пошук товарів, рецептів..."
+    "searchPlaceholder": "Пошук товарів, рецептів...",
+    "wishlist": "Wishlist"
   },
   "home": {
     "hero": "Свіжі продукти з доставкою додому",
@@ -232,5 +233,27 @@
     "termsDeliveryContent": "Ми здійснюємо доставку за адресами в межах нашої зони обслуговування. Терміни доставки є орієнтовними та можуть відрізнятися. Ми не несемо відповідальності за затримки, спричинені обставинами, що не залежать від нас.",
     "termsReturnsTitle": "Повернення та відшкодування",
     "termsReturnsContent": "Якщо ви отримали пошкоджені або неправильні товари, будь ласка, зв'яжіться з нами протягом 24 годин. Ми організуємо заміну або відшкодування. Швидкопсувні товари не підлягають поверненню, якщо вони не є дефектними."
+  },
+  "search": {
+    "recentSearches": "Recent searches",
+    "suggestions": "Suggestions",
+    "resultsFor": "Results for: {query}",
+    "seeResults": "See results for \"{query}\"",
+    "clearRecent": "Clear",
+    "noMatches": "No matching products yet"
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "subtitle": "Keep staples close for the next order.",
+    "empty": "Your wishlist is empty",
+    "emptyDesc": "Save products here so repeat shopping takes less effort.",
+    "shopNow": "Browse products",
+    "add": "Add to wishlist",
+    "remove": "Remove from wishlist",
+    "addSuccess": "Added to wishlist",
+    "removeSuccess": "Removed from wishlist",
+    "saveForLater": "Save for later",
+    "savedForLater": "Saved for later",
+    "movedToCart": "Added to cart"
   }
 }

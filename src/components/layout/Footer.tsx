@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Leaf } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 
 export function Footer() {
   const t = useTranslations('footer');
@@ -15,7 +15,6 @@ export function Footer() {
     >
       <div className="container-grocery py-12 md:py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-          {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
               <div
@@ -33,7 +32,6 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Shop links */}
           <nav aria-label="Shop links">
             <h3 className="heading-section text-sm mb-4" style={{ color: 'var(--color-foreground)' }}>{t('shop') || 'Shop'}</h3>
             <ul className="space-y-2.5" role="list">
@@ -42,7 +40,6 @@ export function Footer() {
             </ul>
           </nav>
 
-          {/* Info links */}
           <nav aria-label="Company information">
             <h3 className="heading-section text-sm mb-4" style={{ color: 'var(--color-foreground)' }}>{t('info') || 'Info'}</h3>
             <ul className="space-y-2.5" role="list">
@@ -52,7 +49,6 @@ export function Footer() {
             </ul>
           </nav>
 
-          {/* Legal links */}
           <nav aria-label="Legal">
             <h3 className="heading-section text-sm mb-4" style={{ color: 'var(--color-foreground)' }}>{t('legal') || 'Legal'}</h3>
             <ul className="space-y-2.5" role="list">

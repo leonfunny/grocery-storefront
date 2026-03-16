@@ -2,6 +2,11 @@ import { createClient, cacheExchange, fetchExchange } from 'urql';
 import Cookies from 'js-cookie';
 
 function getGraphqlUrl(): string {
+  if (typeof window !== 'undefined') {
+    // Client-side: use the local proxy to avoid CORS
+    return '/api/graphql';
+  }
+  // Server-side: call the remote URL directly (no CORS issue)
   return process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:3003/graphql/storefront';
 }
 
@@ -17,7 +22,7 @@ export function getUrqlClient() {
       const token = Cookies.get('grocery_token');
       const headers: Record<string, string> = {};
       if (token) headers.Authorization = `Bearer ${token}`;
-      return { headers };
+      return { headers, method: 'POST' };
     },
   });
 

@@ -1,19 +1,19 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import { CheckCircle2 } from 'lucide-react';
+import { Link, redirect } from '@/i18n/navigation';
 
 export default function CheckoutConfirmationPage() {
   const t = useTranslations('checkout');
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get('order');
   const email = searchParams.get('email');
 
   if (!orderNumber) {
-    redirect('/');
+    redirect({ href: '/', locale });
   }
 
   return (

@@ -1,5 +1,12 @@
 node_modules/
 .next/
+.next-stale/
 .env
 .env.local
 *.tsbuildinfo
+
+# IDE / tooling
+.codex/
+
+# Runtime output
+dev-server.log

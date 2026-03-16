@@ -1,15 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
-import { ShoppingCart, Info, Package, Check } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { ShoppingCart, Info, Package, Check, Minus, Plus, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { FreshnessBadge } from '@/components/grocery/FreshnessBadge';
 import { NutritionModal } from '@/components/grocery/NutritionModal';
+import { Link } from '@/i18n/navigation';
 import { useCartStore } from '@/stores/cart-store';
-import { formatPrice } from '@/lib/utils';
+import { useWishlistStore } from '@/stores/wishlist-store';
+import { formatPrice, getImageSrc, isImageProxySrc } from '@/lib/utils';
 import type { GroceryProduct } from '@/types';
 
 interface ProductCardProps {
@@ -17,15 +18,32 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const locale = useLocale();
   const t = useTranslations();
   const addItem = useCartStore((s) => s.addItem);
+  const addWishlistItem = useWishlistStore((s) => s.addItem);
+  const removeWishlistItem = useWishlistStore((s) => s.removeItem);
+  const isWishlisted = useWishlistStore((s) => s.items.some((item) => item.productId === product.id));
   const [nutritionOpen, setNutritionOpen] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
-  const variant = product.variants?.[0];
-  const inStock = (variant?.stockQuantity ?? product.stockQuantity) > 0;
-  const price = variant?.price ?? product.price;
-  const currency = variant?.currency ?? product.currency ?? 'PLN';
+  const variant = product.variants?.[0] as any;
+  const inStock = (variant?.quantityAvailable ?? (product as any)?.quantityAvailable ?? 0) > 0;
+  const price = variant?.pricing?.price?.gross?.amount ?? (product as any).pricing?.priceRange?.start?.gross?.amount ?? 0;
+  const currency = variant?.pricing?.price?.gross?.currency ?? (product as any).pricing?.priceRange?.start?.gross?.currency ?? 'PLN';
+  const imageUrl = getImageSrc(product.thumbnail?.url);
+  const maxQuantity = Math.max(1, variant?.quantityAvailable ?? (product as any)?.quantityAvailable ?? 99);
+  const quantityUnitLabel = locale === 'pl' ? 'szt.' : 'pcs';
+  const addToCartLabel = locale === 'pl' ? 'do koszyka' : t('common.addToCart');
+
+  function updateQuantity(e: React.MouseEvent, delta: number) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!inStock) return;
+
+    setQuantity((current) => Math.max(1, Math.min(maxQuantity, current + delta)));
+  }
 
   function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
@@ -34,17 +52,44 @@ export function ProductCard({ product }: ProductCardProps) {
     addItem({
       productId: product.id,
       variantId: variant.id,
+      slug: product.slug,
       name: product.name,
-      thumbnail: product.thumbnail?.url,
+      thumbnail: imageUrl || undefined,
       price,
       currency,
-      quantity: 1,
+      quantity,
       storageZone: product.storageZone,
       allergens: product.allergens,
     });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1200);
     toast.success(t('product.addToCartSuccess'));
+  }
+
+  function handleWishlistToggle(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!variant) return;
+
+    if (isWishlisted) {
+      removeWishlistItem(product.id);
+      toast.success(t('wishlist.removeSuccess'));
+      return;
+    }
+
+    addWishlistItem({
+      productId: product.id,
+      variantId: variant.id,
+      slug: product.slug,
+      name: product.name,
+      thumbnail: imageUrl || undefined,
+      price,
+      currency,
+      quantity,
+      storageZone: product.storageZone,
+    });
+    toast.success(t('wishlist.addSuccess'));
   }
 
   function handleNutritionClick(e: React.MouseEvent) {
@@ -61,15 +106,15 @@ export function ProductCard({ product }: ProductCardProps) {
         style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
         aria-label={`${product.name}, ${formatPrice(price, currency)}${!inStock ? `, ${t('product.outOfStock')}` : ''}`}
       >
-        {/* Image */}
         <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: 'var(--color-muted)' }}>
-          {product.thumbnail?.url ? (
+          {imageUrl ? (
             <Image
-              src={product.thumbnail.url}
+              src={imageUrl}
               alt=""
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-slow"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              unoptimized={isImageProxySrc(imageUrl)}
             />
           ) : (
             <div className="flex items-center justify-center h-full">
@@ -77,37 +122,49 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          {/* Freshness badge */}
           {product.freshness && (
             <div className="absolute top-2.5 left-2.5">
               <FreshnessBadge freshness={product.freshness} nearestExpiry={product.nearestExpiry} compact />
             </div>
           )}
 
-          {/* Storage zone indicator */}
-          {product.storageZone && (
-            <span
-              className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md text-[10px] font-bold text-white zone-${product.storageZone.toLowerCase()}`}
-              aria-label={`Storage: ${product.storageZone.toLowerCase()}`}
+          <div className="absolute top-2.5 right-2.5 flex flex-col items-end gap-2">
+            <button
+              type="button"
+              onClick={handleWishlistToggle}
+              className="w-11 h-11 rounded-full border flex items-center justify-center transition-all duration-fast hover:scale-105"
+              style={{
+                backgroundColor: 'color-mix(in srgb, var(--color-card) 90%, transparent)',
+                borderColor: isWishlisted ? 'var(--color-primary)' : 'var(--color-border)',
+                color: isWishlisted ? 'var(--color-primary)' : 'var(--color-foreground)',
+              }}
+              aria-label={isWishlisted ? t('wishlist.remove') : t('wishlist.add')}
             >
-              {product.storageZone === 'FROZEN' ? '\u2744' : product.storageZone === 'CHILLED' ? '\u2603' : '\u2600'}
-            </span>
-          )}
+              <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} aria-hidden="true" />
+            </button>
 
-          {/* Nutrition info button — 44x44 touch target */}
+            {product.storageZone && (
+              <span
+                className={`px-2 py-0.5 rounded-md text-[10px] font-bold text-white zone-${product.storageZone.toLowerCase()}`}
+                aria-label={`Storage: ${product.storageZone.toLowerCase()}`}
+              >
+                {product.storageZone === 'FROZEN' ? '\u2744' : product.storageZone === 'CHILLED' ? '\u2603' : '\u2600'}
+              </span>
+            )}
+          </div>
+
           {product.nutritionFacts && (
             <button
               type="button"
               onClick={handleNutritionClick}
               className="absolute bottom-2.5 right-2.5 w-11 h-11 rounded-full flex items-center justify-center border transition-all duration-fast hover:scale-110"
               style={{ backgroundColor: 'color-mix(in srgb, var(--color-card) 90%, transparent)', borderColor: 'var(--color-border)' }}
-              aria-label={`${t('product.nutrition')} — ${product.name}`}
+              aria-label={`${t('product.nutrition')} - ${product.name}`}
             >
               <Info className="w-4 h-4" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
             </button>
           )}
 
-          {/* Out of stock overlay */}
           {!inStock && (
             <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: 'color-mix(in srgb, var(--color-card) 70%, transparent)' }}>
               <span className="px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: 'var(--color-muted)', color: 'var(--color-muted-foreground)' }}>
@@ -117,9 +174,7 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        {/* Content */}
         <div className="p-3.5">
-          {/* Allergen chips */}
           {product.allergens && product.allergens.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2" role="list" aria-label={t('product.allergens')}>
               {product.allergens.slice(0, 3).map((a) => (
@@ -131,7 +186,6 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          {/* Dietary tags */}
           {product.dietaryTags && product.dietaryTags.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2">
               {product.dietaryTags.map((tag) => (
@@ -150,8 +204,7 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.name}
           </h3>
 
-          {/* Price */}
-          <div className="flex items-end justify-between mt-2.5 gap-2">
+          <div className="mt-2.5">
             <div>
               <span className="text-base font-bold tabular-nums tracking-tight" style={{ color: 'var(--color-foreground)' }}>
                 {formatPrice(price, currency)}
@@ -168,29 +221,69 @@ export function ProductCard({ product }: ProductCardProps) {
               )}
             </div>
 
-            {/* Add to cart — 36x36 visual, 44x44 touch */}
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={!inStock}
-              className="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-fast disabled:opacity-40 active:scale-95"
-              style={{
-                backgroundColor: justAdded ? 'var(--color-fresh)' : inStock ? 'var(--color-primary)' : 'var(--color-muted)',
-                color: inStock ? 'white' : 'var(--color-muted-foreground)',
-              }}
-              aria-label={inStock ? t('common.addToCart') : t('product.outOfStock')}
-            >
-              {justAdded ? (
-                <Check className="w-4 h-4" aria-hidden="true" />
-              ) : (
-                <ShoppingCart className="w-4 h-4" aria-hidden="true" />
-              )}
-            </button>
+            <div className="grid grid-cols-[92px,minmax(0,1fr)] gap-2 mt-3 items-start">
+              <div className="group/quantity">
+                <div
+                  className="grid grid-cols-3 h-11 rounded-xl border overflow-hidden"
+                  style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
+                >
+                  <button
+                    type="button"
+                    onClick={(e) => updateQuantity(e, -1)}
+                    disabled={!inStock || quantity <= 1}
+                    className="flex items-center justify-center transition-all duration-fast hover-surface disabled:opacity-40"
+                    aria-label={`Decrease ${product.name} quantity`}
+                  >
+                    <Minus className="w-4 h-4 opacity-80 transition-opacity duration-fast group-hover/quantity:opacity-100" aria-hidden="true" />
+                  </button>
+                  <span
+                    className="flex items-center justify-center text-sm font-semibold tabular-nums"
+                    style={{ color: 'var(--color-foreground)' }}
+                    aria-live="polite"
+                  >
+                    {quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => updateQuantity(e, 1)}
+                    disabled={!inStock || quantity >= maxQuantity}
+                    className="flex items-center justify-center transition-all duration-fast hover-surface disabled:opacity-40"
+                    aria-label={`Increase ${product.name} quantity`}
+                  >
+                    <Plus className="w-4 h-4 opacity-80 transition-opacity duration-fast group-hover/quantity:opacity-100" aria-hidden="true" />
+                  </button>
+                </div>
+                <span
+                  className="block text-center text-[11px] mt-1 transition-all duration-fast opacity-0 translate-y-1 group-hover/quantity:opacity-100 group-hover/quantity:translate-y-0 group-focus-within/quantity:opacity-100 group-focus-within/quantity:translate-y-0"
+                  style={{ color: 'var(--color-muted-foreground)' }}
+                >
+                  {quantityUnitLabel}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={!inStock}
+                className="h-11 rounded-xl px-3 checkout-btn flex items-center justify-center gap-2 font-semibold transition-all duration-fast disabled:opacity-40 active:scale-[0.98]"
+                style={{
+                  backgroundColor: justAdded ? 'var(--color-fresh)' : inStock ? 'var(--color-primary)' : 'var(--color-muted)',
+                  color: inStock ? 'white' : 'var(--color-muted-foreground)',
+                }}
+                aria-label={inStock ? `${addToCartLabel}, quantity ${quantity}` : t('product.outOfStock')}
+              >
+                {justAdded ? (
+                  <Check className="w-4 h-4" aria-hidden="true" />
+                ) : (
+                  <ShoppingCart className="w-4 h-4" aria-hidden="true" />
+                )}
+                <span className="truncate text-xs sm:text-sm">{addToCartLabel}</span>
+              </button>
+            </div>
           </div>
         </div>
       </Link>
 
-      {/* Nutrition modal */}
       <NutritionModal
         open={nutritionOpen}
         onOpenChange={setNutritionOpen}

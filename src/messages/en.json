@@ -17,9 +17,18 @@
     "home": "Home",
     "products": "Products",
     "recipes": "Recipes",
+    "wishlist": "Wishlist",
     "cart": "Cart",
     "account": "Account",
     "searchPlaceholder": "Search products, recipes..."
+  },
+  "search": {
+    "recentSearches": "Recent searches",
+    "suggestions": "Suggestions",
+    "resultsFor": "Results for: {query}",
+    "seeResults": "See results for \"{query}\"",
+    "clearRecent": "Clear",
+    "noMatches": "No matching products yet"
   },
   "home": {
     "hero": "Fresh groceries, delivered to your door",
@@ -92,6 +101,20 @@
       "expiringSoon": "Expiring soon",
       "lastChance": "Last chance"
     }
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "subtitle": "Keep staples close for the next order.",
+    "empty": "Your wishlist is empty",
+    "emptyDesc": "Save products here so repeat shopping takes less effort.",
+    "shopNow": "Browse products",
+    "add": "Add to wishlist",
+    "remove": "Remove from wishlist",
+    "addSuccess": "Added to wishlist",
+    "removeSuccess": "Removed from wishlist",
+    "saveForLater": "Save for later",
+    "savedForLater": "Saved for later",
+    "movedToCart": "Added to cart"
   },
   "recipes": {
     "title": "Recipes",

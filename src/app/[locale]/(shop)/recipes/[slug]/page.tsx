@@ -4,13 +4,13 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery } from 'urql';
 import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowLeft, Clock, Users, ChefHat, ShoppingCart, Check, X } from 'lucide-react';
+import { Clock, Users, ChefHat, ShoppingCart, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { RECIPE_BY_SLUG_QUERY } from '@/lib/graphql/operations/grocery';
 import { Breadcrumb } from '@/components/grocery/Breadcrumb';
+import { Link } from '@/i18n/navigation';
 import { useCartStore } from '@/stores/cart-store';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getImageSrc, isImageProxySrc } from '@/lib/utils';
 import { useChannel } from '@/hooks/use-channel';
 
 const DIFFICULTY_STYLES: Record<string, string> = {
@@ -77,14 +77,16 @@ export default function RecipeDetailPage() {
   }
 
   const availableIngredients = recipe.ingredients?.filter((i: any) => i.variant && i.inStock) || [];
+  const imageUrl = getImageSrc(recipe.thumbnail?.url);
 
   function addAllToCart() {
     for (const ingredient of availableIngredients) {
       addItem({
         productId: ingredient.product?.id || ingredient.variant.id,
         variantId: ingredient.variant.id,
+        slug: ingredient.product?.slug,
         name: ingredient.variant.name || ingredient.displayName,
-        thumbnail: ingredient.product?.thumbnail?.url,
+        thumbnail: getImageSrc(ingredient.product?.thumbnail?.url) || undefined,
         price: ingredient.variant.pricing?.price?.gross?.amount ?? 0,
         currency: ingredient.variant.pricing?.price?.gross?.currency ?? 'PLN',
         quantity: Math.ceil(ingredient.quantity),
@@ -106,8 +108,8 @@ export default function RecipeDetailPage() {
         <div className="md:col-span-3">
           {/* Hero */}
           <div className="relative aspect-video rounded-xl overflow-hidden mb-6" style={{ backgroundColor: 'var(--color-muted)' }}>
-            {recipe.thumbnail?.url ? (
-              <Image src={recipe.thumbnail.url} alt={recipe.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 60vw" priority />
+            {imageUrl ? (
+              <Image src={imageUrl} alt={recipe.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 60vw" priority unoptimized={isImageProxySrc(imageUrl)} />
             ) : (
               <div className="flex items-center justify-center h-full">
                 <ChefHat className="w-16 h-16 opacity-20" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
@@ -159,7 +161,10 @@ export default function RecipeDetailPage() {
                 {t('steps')}
               </h2>
               <ol className="space-y-8" role="list">
-                {recipe.steps.map((step: any) => (
+                {recipe.steps.map((step: any) => {
+                  const stepImage = getImageSrc(step.image?.url);
+
+                  return (
                   <li key={step.stepNumber} className="flex gap-4" role="listitem">
                     <div
                       className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
@@ -172,14 +177,15 @@ export default function RecipeDetailPage() {
                       <p className="text-sm leading-relaxed" style={{ color: 'var(--color-foreground)' }}>
                         {step.instruction}
                       </p>
-                      {step.image?.url && (
+                      {stepImage && (
                         <div className="mt-3 relative aspect-video rounded-lg overflow-hidden max-w-sm">
-                          <Image src={step.image.url} alt={`Step ${step.stepNumber}`} fill className="object-cover" sizes="400px" />
+                          <Image src={stepImage} alt={`Step ${step.stepNumber}`} fill className="object-cover" sizes="400px" unoptimized={isImageProxySrc(stepImage)} />
                         </div>
                       )}
                     </div>
                   </li>
-                ))}
+                  );
+                })}
               </ol>
             </section>
           )}

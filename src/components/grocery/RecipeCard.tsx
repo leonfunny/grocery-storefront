@@ -1,9 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Clock, ChefHat, Users } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
+import { getImageSrc, isImageProxySrc } from '@/lib/utils';
 import type { Recipe } from '@/types';
 
 interface RecipeCardProps {
@@ -23,6 +24,8 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     ? DIFFICULTY_STYLES[recipe.difficulty] || { bg: 'var(--color-muted-foreground)', text: 'white' }
     : null;
 
+  const imageUrl = getImageSrc(recipe.thumbnail?.url);
+
   return (
     <Link
       href={`/recipes/${recipe.slug}`}
@@ -30,15 +33,15 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
       style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
       aria-label={`${recipe.name}${recipe.totalTime ? `, ${recipe.totalTime} minutes` : ''}`}
     >
-      {/* Thumbnail */}
       <div className="relative aspect-[4/3] overflow-hidden" style={{ backgroundColor: 'var(--color-muted)' }}>
-        {recipe.thumbnail?.url ? (
+        {imageUrl ? (
           <Image
-            src={recipe.thumbnail.url}
+            src={imageUrl}
             alt=""
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-slow"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            unoptimized={isImageProxySrc(imageUrl)}
           />
         ) : (
           <div className="flex items-center justify-center h-full">
@@ -55,7 +58,6 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         )}
       </div>
 
-      {/* Content */}
       <div className="p-4">
         <h3 className="font-semibold text-sm line-clamp-2 mb-2 leading-snug group-hover:text-primary transition-colors duration-fast" style={{ color: 'var(--color-foreground)' }}>
           {recipe.name}
@@ -67,7 +69,6 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           </p>
         )}
 
-        {/* Meta */}
         <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--color-muted-foreground)' }}>
           {recipe.totalTime && (
             <span className="flex items-center gap-1">

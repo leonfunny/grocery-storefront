@@ -1,11 +1,15 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { ShoppingCart, Search, Menu, X, Leaf } from 'lucide-react';
+import { ShoppingCart, Search, Menu, X, Leaf, Heart } from 'lucide-react';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useCartStore } from '@/stores/cart-store';
+import { useWishlistStore } from '@/stores/wishlist-store';
+import { SearchAutocomplete } from '@/components/search/SearchAutocomplete';
+import { MiniCart } from './MiniCart';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { ThemeToggle } from './ThemeToggle';
 
 export function Header() {
   const t = useTranslations('nav');
@@ -14,10 +18,13 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const itemCount = useCartStore((s) => s.getItemCount());
+  const wishlistCount = useWishlistStore((s) => s.items.length);
+  const [isMounted, setIsMounted] = useState(false);
 
-  function handleSearch(e: FormEvent) {
-    e.preventDefault();
-    const q = searchValue.trim();
+  useEffect(() => setIsMounted(true), []);
+
+  function handleSearch(query: string) {
+    const q = query.trim();
     if (!q) return;
     router.push(`/products?search=${encodeURIComponent(q)}`);
     setSearchOpen(false);
@@ -35,7 +42,6 @@ export function Header() {
       role="banner"
     >
       <div className="container-grocery h-full flex items-center justify-between gap-4">
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0 group" aria-label="Grocery Store Home">
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center transition-transform duration-fast group-hover:scale-105"
@@ -48,7 +54,6 @@ export function Header() {
           </span>
         </Link>
 
-        {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
           {[
             { href: '/', label: t('home') },
@@ -66,26 +71,18 @@ export function Header() {
           ))}
         </nav>
 
-        {/* Search bar (desktop) */}
-        <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md">
-          <label htmlFor="desktop-search" className="sr-only">{t('searchPlaceholder')}</label>
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
-            <input
-              id="desktop-search"
-              type="search"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              placeholder={t('searchPlaceholder')}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm bg-transparent transition-colors duration-fast focus:outline-none focus-visible:ring-2"
-              style={{ borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}
-            />
-          </div>
-        </form>
+        <div className="hidden md:flex flex-1 max-w-md">
+          <SearchAutocomplete
+            inputId="desktop-search"
+            value={searchValue}
+            onValueChange={setSearchValue}
+            onSearch={handleSearch}
+            placeholder={t('searchPlaceholder')}
+            className="w-full"
+          />
+        </div>
 
-        {/* Actions */}
         <div className="flex items-center gap-1">
-          {/* Mobile search toggle */}
           <button
             type="button"
             className="md:hidden p-2.5 rounded-xl hover-surface"
@@ -100,14 +97,35 @@ export function Header() {
             )}
           </button>
 
-          {/* Cart */}
+          <ThemeToggle />
+          <LanguageSwitcher />
+
+          <Link
+            href="/wishlist"
+            className="relative p-2.5 rounded-xl hover-surface"
+            aria-label={`${t('wishlist')}${isMounted && wishlistCount > 0 ? `, ${wishlistCount} items` : ''}`}
+          >
+            <Heart className="w-5 h-5" style={{ color: 'var(--color-foreground)' }} />
+            {isMounted && wishlistCount > 0 && (
+              <span
+                className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
+                style={{ backgroundColor: 'var(--color-primary)' }}
+                aria-hidden="true"
+              >
+                {wishlistCount > 99 ? '99+' : wishlistCount}
+              </span>
+            )}
+          </Link>
+
+          <MiniCart />
+
           <Link
             href="/cart"
-            className="relative p-2.5 rounded-xl hover-surface"
-            aria-label={`${t('cart')}${itemCount > 0 ? `, ${itemCount} items` : ''}`}
+            className="relative p-2.5 rounded-xl hover-surface md:hidden"
+            aria-label={`${t('cart')}${isMounted && itemCount > 0 ? `, ${itemCount} items` : ''}`}
           >
             <ShoppingCart className="w-5 h-5" style={{ color: 'var(--color-foreground)' }} />
-            {itemCount > 0 && (
+            {isMounted && itemCount > 0 && (
               <span
                 className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
                 style={{ backgroundColor: 'var(--color-primary)' }}
@@ -118,7 +136,6 @@ export function Header() {
             )}
           </Link>
 
-          {/* Mobile menu toggle */}
           <button
             type="button"
             className="md:hidden p-2.5 rounded-xl hover-surface"
@@ -136,31 +153,24 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile search */}
       {searchOpen && (
-        <form
-          onSubmit={handleSearch}
+        <div
           className="md:hidden border-t px-4 py-3 animate-fade-up"
           style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
         >
-          <label htmlFor="mobile-search" className="sr-only">{t('searchPlaceholder')}</label>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
-            <input
-              id="mobile-search"
-              type="search"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              placeholder={t('searchPlaceholder')}
-              autoFocus
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm bg-transparent focus:outline-none focus-visible:ring-2"
-              style={{ borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}
-            />
-          </div>
-        </form>
+          <SearchAutocomplete
+            inputId="mobile-search"
+            value={searchValue}
+            onValueChange={setSearchValue}
+            onSearch={handleSearch}
+            placeholder={t('searchPlaceholder')}
+            autoFocus
+            className="w-full"
+            onDismiss={() => setSearchOpen(false)}
+          />
+        </div>
       )}
 
-      {/* Mobile menu */}
       {menuOpen && (
         <nav
           id="mobile-nav"
@@ -172,7 +182,8 @@ export function Header() {
             { href: '/', label: t('home') },
             { href: '/products', label: t('products') },
             { href: '/recipes', label: t('recipes') },
-            { href: '/cart', label: `${t('cart')}${itemCount > 0 ? ` (${itemCount})` : ''}` },
+            { href: '/wishlist', label: `${t('wishlist')}${isMounted && wishlistCount > 0 ? ` (${wishlistCount})` : ''}` },
+            { href: '/cart', label: `${t('cart')}${isMounted && itemCount > 0 ? ` (${itemCount})` : ''}` },
           ].map(({ href, label }) => (
             <Link
               key={href}

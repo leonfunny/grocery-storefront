@@ -81,6 +81,27 @@ export const PRODUCTS_QUERY = `
   }
 `;
 
+export const SEARCH_PRODUCTS_QUERY = `
+  query SearchProductsIndex($channel: String!, $first: Int) {
+    products(channel: $channel, first: $first) {
+      edges {
+        node {
+          id
+          name
+          slug
+          thumbnail { url alt }
+          category { id name slug }
+          pricing {
+            priceRange {
+              start { gross { amount currency } }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const PRODUCT_BY_SLUG_QUERY = `
   ${GROCERY_PRODUCT_FIELDS}
   query GroceryProduct($channel: String!, $slug: String!) {
@@ -158,6 +179,7 @@ export const RECIPE_BY_SLUG_QUERY = `
         product {
           id
           name
+          slug
           thumbnail { url alt }
         }
       }

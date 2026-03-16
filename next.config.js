@@ -10,6 +10,7 @@ const nextConfig = {
       { protocol: 'https', hostname: '**.enail.pro' },
       { protocol: 'https', hostname: '**.zira-ai.com' },
       { protocol: 'https', hostname: 'img.zira.pl' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'http', hostname: 'localhost' },
     ],
   },

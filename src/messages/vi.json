@@ -19,7 +19,8 @@
     "recipes": "Công thức nấu ăn",
     "cart": "Giỏ hàng",
     "account": "Tài khoản",
-    "searchPlaceholder": "Tìm sản phẩm, công thức nấu ăn..."
+    "searchPlaceholder": "Tìm sản phẩm, công thức nấu ăn...",
+    "wishlist": "Wishlist"
   },
   "home": {
     "hero": "Thực phẩm tươi sạch, giao tận cửa nhà",
@@ -232,5 +233,27 @@
     "termsDeliveryContent": "Chúng tôi giao hàng đến các địa chỉ trong khu vực dịch vụ của mình. Thời gian giao hàng chỉ là ước tính và có thể thay đổi. Chúng tôi không chịu trách nhiệm về sự chậm trễ do các hoàn cảnh ngoài tầm kiểm soát.",
     "termsReturnsTitle": "Đổi Trả & Hoàn Tiền",
     "termsReturnsContent": "Nếu bạn nhận được hàng hóa bị hư hỏng hoặc sai, vui lòng liên hệ với chúng tôi trong vòng 24 giờ. Chúng tôi sẽ sắp xếp đổi hàng hoặc hoàn tiền. Các mặt hàng dễ hỏng không thể hoàn trả trừ khi bị lỗi."
+  },
+  "search": {
+    "recentSearches": "Recent searches",
+    "suggestions": "Suggestions",
+    "resultsFor": "Results for: {query}",
+    "seeResults": "See results for \"{query}\"",
+    "clearRecent": "Clear",
+    "noMatches": "No matching products yet"
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "subtitle": "Keep staples close for the next order.",
+    "empty": "Your wishlist is empty",
+    "emptyDesc": "Save products here so repeat shopping takes less effort.",
+    "shopNow": "Browse products",
+    "add": "Add to wishlist",
+    "remove": "Remove from wishlist",
+    "addSuccess": "Added to wishlist",
+    "removeSuccess": "Removed from wishlist",
+    "saveForLater": "Save for later",
+    "savedForLater": "Saved for later",
+    "movedToCart": "Added to cart"
   }
 }

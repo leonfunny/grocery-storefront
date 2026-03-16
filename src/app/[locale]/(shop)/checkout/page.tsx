@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -10,6 +10,7 @@ import { useMutation } from 'urql';
 import { ArrowLeft, ShieldCheck, ShoppingCart, Truck, Banknote, CreditCard, Building2, ChevronLeft, ChevronRight, Loader2, Tag, X, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCartStore } from '@/stores/cart-store';
+import { useHydrated } from '@/hooks/use-hydrated';
 import { useChannel } from '@/hooks/use-channel';
 import { formatPrice, cn } from '@/lib/utils';
 import { CheckoutProgress } from '@/components/checkout/CheckoutProgress';
@@ -39,13 +40,16 @@ const PAYMENT_ICONS: Record<string, typeof CreditCard> = {
 const INPUT_CLASS = 'w-full px-3 py-2.5 rounded-lg border text-sm bg-transparent transition-colors duration-fast focus:outline-none focus-visible:ring-2';
 
 export default function CheckoutPage() {
+  const locale = useLocale();
   const t = useTranslations('checkout');
   const tCart = useTranslations('cart');
   const tCommon = useTranslations('common');
+  const isHydrated = useHydrated();
   const router = useRouter();
   const channel = useChannel();
   const { items, getSubtotal, clear } = useCartStore();
-  const subtotal = getSubtotal();
+  const displayItems = isHydrated ? items : [];
+  const subtotal = isHydrated ? getSubtotal() : 0;
 
   const [step, setStep] = useState<CheckoutStep>('delivery');
   const [completedSteps, setCompletedSteps] = useState<Set<CheckoutStep>>(new Set());
@@ -85,7 +89,7 @@ export default function CheckoutPage() {
 
   // Collect allergens from cart
   const cartAllergens = Array.from(
-    new Set(items.flatMap((i) => i.allergens || []))
+    new Set(displayItems.flatMap((i) => i.allergens || []))
   );
 
   const goToStep = useCallback((nextStep: CheckoutStep) => {
@@ -100,6 +104,15 @@ export default function CheckoutPage() {
     });
   }, []);
 
+  if (!isHydrated) {
+    return (
+      <div className="container-grocery py-16 text-center">
+        <ShoppingCart className="w-16 h-16 mx-auto mb-4 opacity-20" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
+        <h1 className="heading-display text-xl mb-2" style={{ color: 'var(--color-foreground)' }}>{tCommon('loading')}</h1>
+      </div>
+    );
+  }
+
   // --- Step handlers ---
 
   async function handleDeliverySubmit() {
@@ -112,7 +125,7 @@ export default function CheckoutPage() {
         input: {
           channel,
           email: values.email,
-          lines: items.map((item) => ({
+          lines: displayItems.map((item) => ({
             variantId: item.variantId,
             quantity: item.quantity,
           })),
@@ -216,7 +229,9 @@ export default function CheckoutPage() {
         checkoutId,
         input: {
           gateway: method.provider || method.name,
-          returnUrl: typeof window !== 'undefined' ? `${window.location.origin}/checkout/confirmation` : '',
+          returnUrl: typeof window !== 'undefined'
+            ? `${window.location.origin}${locale === 'pl' ? '' : `/${locale}`}/checkout/confirmation`
+            : '',
         },
       });
 
@@ -319,7 +334,7 @@ export default function CheckoutPage() {
     }
   }
 
-  if (items.length === 0 && !checkoutId) {
+  if (displayItems.length === 0 && !checkoutId) {
     return (
       <div className="container-grocery py-16 text-center">
         <ShoppingCart className="w-12 h-12 mx-auto mb-3 opacity-20" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
@@ -699,7 +714,7 @@ export default function CheckoutPage() {
                 <div className="mb-4">
                   <p className="text-xs font-semibold mb-2" style={{ color: 'var(--color-muted-foreground)' }}>{t('summary')}</p>
                   <ul className="space-y-2" role="list">
-                    {items.map((item) => (
+                    {displayItems.map((item) => (
                       <li key={item.variantId} className="flex justify-between text-sm" role="listitem">
                         <span style={{ color: 'var(--color-foreground)' }}>
                           {item.name} &times; {item.quantity}
@@ -776,7 +791,7 @@ export default function CheckoutPage() {
             </h2>
 
             <ul className="space-y-3 mb-4" role="list">
-              {items.map((item) => (
+              {displayItems.map((item) => (
                 <li key={item.variantId} className="flex justify-between text-sm" role="listitem">
                   <span className="truncate max-w-[180px]" style={{ color: 'var(--color-foreground)' }}>
                     {item.name} &times; {item.quantity}

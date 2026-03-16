@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useQuery, useClient } from 'urql';
-import { SlidersHorizontal, Search, X } from 'lucide-react';
+import { SlidersHorizontal, X } from 'lucide-react';
 import { PRODUCTS_QUERY } from '@/lib/graphql/operations/grocery';
 import { ProductCard } from '@/components/product/ProductCard';
 import { AllergenFilter } from '@/components/grocery/AllergenFilter';
 import { SortDropdown, SORT_OPTIONS } from '@/components/grocery/SortDropdown';
+import { SearchAutocomplete } from '@/components/search/SearchAutocomplete';
+import { useRouter } from '@/i18n/navigation';
 import { useChannel } from '@/hooks/use-channel';
 import type { StorageZone } from '@/types';
 
@@ -36,6 +38,8 @@ function ProductSkeleton() {
 
 export default function ProductsPage() {
   const t = useTranslations('products');
+  const tNav = useTranslations('nav');
+  const tCommon = useTranslations('common');
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialZone = searchParams.get('zone') as StorageZone | null;
@@ -96,20 +100,36 @@ export default function ProductsPage() {
   const totalCount = result.data?.products?.totalCount ?? 0;
   const activeFilterCount = excludeAllergens.length + dietaryTags.length + certifications.length + (storageZone ? 1 : 0);
 
-  function updateUrl(newSort: string) {
+  function buildProductsUrl(nextSort: string, nextSearch: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (newSort !== 'newest') {
-      params.set('sort', newSort);
+    const trimmedSearch = nextSearch.trim();
+
+    if (nextSort !== 'newest') {
+      params.set('sort', nextSort);
     } else {
       params.delete('sort');
     }
-    router.replace(`/products?${params.toString()}`, { scroll: false });
+
+    if (trimmedSearch) {
+      params.set('search', trimmedSearch);
+    } else {
+      params.delete('search');
+    }
+
+    const nextParams = params.toString();
+    return `/products${nextParams ? `?${nextParams}` : ''}`;
   }
 
   function handleSortChange(newSort: string) {
     setSort(newSort);
     setLoadedProducts([]);
-    updateUrl(newSort);
+    router.replace(buildProductsUrl(newSort, search), { scroll: false });
+  }
+
+  function handleSearchSubmit(nextSearch: string) {
+    setSearch(nextSearch);
+    setLoadedProducts([]);
+    router.replace(buildProductsUrl(sort, nextSearch), { scroll: false });
   }
 
   const client = useClient();
@@ -141,6 +161,7 @@ export default function ProductsPage() {
     setCertifications([]);
     setStorageZone('');
     setSearch('');
+    router.replace(buildProductsUrl(sort, ''), { scroll: false });
   }
 
   return (
@@ -182,25 +203,14 @@ export default function ProductsPage() {
       </div>
 
       {/* Search */}
-      <div className="mb-6 relative">
-        <label htmlFor="product-search" className="sr-only">Search products</label>
-        <Search
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-          style={{ color: 'var(--color-muted-foreground)' }}
-          aria-hidden="true"
-        />
-        <input
-          id="product-search"
-          type="search"
+      <div className="mb-6">
+        <SearchAutocomplete
+          inputId="product-search"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t('searchPlaceholder') || 'Search products...'}
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm bg-transparent transition-colors duration-fast focus:outline-none focus-visible:ring-2"
-          style={{
-            borderColor: 'var(--color-border)',
-            color: 'var(--color-foreground)',
-            ['--tw-ring-color' as string]: 'var(--color-ring)',
-          }}
+          onValueChange={setSearch}
+          onSearch={handleSearchSubmit}
+          placeholder={tNav('searchPlaceholder') || 'Search products...'}
+          className="w-full"
         />
       </div>
 
@@ -316,7 +326,7 @@ export default function ProductsPage() {
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border text-sm font-medium transition-colors duration-fast hover-surface disabled:opacity-60"
                 style={{ borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}
               >
-                {loadingMore ? t('loading') || 'Loading...' : `${t('loadMore')} (${loadedProducts.length} / ${totalCount})`}
+                {loadingMore ? tCommon('loading') : `${t('loadMore')} (${loadedProducts.length} / ${totalCount})`}
               </button>
             </div>
           )}

@@ -26,7 +26,7 @@ export function SortDropdown({ value, onChange }: SortDropdownProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor="sort-select" className="text-xs font-medium whitespace-nowrap" style={{ color: 'var(--color-muted-foreground)' }}>
+      <label htmlFor="sort-select" className="text-xs font-medium whitespace-nowrap" style={{ color: 'var(--color-foreground)' }}>
         {t('sortBy')}
       </label>
       <select
@@ -37,6 +37,7 @@ export function SortDropdown({ value, onChange }: SortDropdownProps) {
         style={{
           borderColor: 'var(--color-border)',
           color: 'var(--color-foreground)',
+          backgroundColor: 'var(--color-card)',
         }}
       >
         {SORT_OPTIONS.map((opt) => (

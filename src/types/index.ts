@@ -123,6 +123,7 @@ export interface RecipeIngredient {
 export interface CartItem {
   productId: string;
   variantId: string;
+  slug?: string;
   name: string;
   thumbnail?: string;
   price: number;
@@ -130,6 +131,19 @@ export interface CartItem {
   quantity: number;
   storageZone?: StorageZone;
   allergens?: string[];
+}
+
+export interface WishlistItem {
+  productId: string;
+  variantId: string;
+  slug?: string;
+  name: string;
+  thumbnail?: string;
+  price: number;
+  currency: string;
+  quantity: number;
+  storageZone?: StorageZone;
+  addedAt: string;
 }
 
 export interface Salon {

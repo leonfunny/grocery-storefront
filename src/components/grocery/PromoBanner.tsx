@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 
 interface BannerSlide {
   headline: string;
@@ -63,7 +63,7 @@ export function PromoBanner() {
       <div
         className="flex h-full transition-transform duration-500 ease-out"
         style={{
-          transform: `translateX(-${current * 100}%)`,
+          transform: `translateX(-${(current * 100) / slides.length}%)`,
           width: `${slides.length * 100}%`,
         }}
       >
@@ -91,7 +91,6 @@ export function PromoBanner() {
         ))}
       </div>
 
-      {/* Dot indicators */}
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
         {slides.map((_, i) => (
           <button

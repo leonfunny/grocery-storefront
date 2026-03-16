@@ -19,7 +19,8 @@
     "recipes": "食谱",
     "cart": "购物车",
     "account": "账户",
-    "searchPlaceholder": "搜索商品、食谱..."
+    "searchPlaceholder": "搜索商品、食谱...",
+    "wishlist": "Wishlist"
   },
   "home": {
     "hero": "新鲜食材，送货上门",
@@ -232,5 +233,27 @@
     "termsDeliveryContent": "我们配送至服务区域内的地址。配送时间为预估时间，可能有所变动。我们不对因不可抗力造成的延误负责。",
     "termsReturnsTitle": "退货与退款",
     "termsReturnsContent": "如果您收到损坏或错误的商品，请在24小时内联系我们。我们将安排补发或退款。易腐商品除非存在质量问题，否则不接受退货。"
+  },
+  "search": {
+    "recentSearches": "Recent searches",
+    "suggestions": "Suggestions",
+    "resultsFor": "Results for: {query}",
+    "seeResults": "See results for \"{query}\"",
+    "clearRecent": "Clear",
+    "noMatches": "No matching products yet"
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "subtitle": "Keep staples close for the next order.",
+    "empty": "Your wishlist is empty",
+    "emptyDesc": "Save products here so repeat shopping takes less effort.",
+    "shopNow": "Browse products",
+    "add": "Add to wishlist",
+    "remove": "Remove from wishlist",
+    "addSuccess": "Added to wishlist",
+    "removeSuccess": "Removed from wishlist",
+    "saveForLater": "Save for later",
+    "savedForLater": "Saved for later",
+    "movedToCart": "Added to cart"
   }
 }

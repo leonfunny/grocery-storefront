@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import { Toaster } from 'sonner';
+import Script from 'next/script';
 import { GraphQLProvider } from '@/lib/graphql/provider';
 import { SalonLoader } from '@/components/SalonLoader';
+import { AppToaster } from '@/components/layout/AppToaster';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -12,12 +13,20 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pl" suppressHydrationWarning>
-      <body>
+      <body suppressHydrationWarning>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`try {
+            var theme = localStorage.getItem('grocery-theme') === 'dark' ? 'dark' : 'light';
+            document.documentElement.dataset.theme = theme;
+          } catch (error) {
+            document.documentElement.dataset.theme = 'light';
+          }`}
+        </Script>
         <GraphQLProvider>
-          <SalonLoader />
+          {!process.env.NEXT_PUBLIC_CHANNEL && <SalonLoader />}
           {children}
         </GraphQLProvider>
-        <Toaster position="top-right" richColors />
+        <AppToaster />
       </body>
     </html>
   );

@@ -19,7 +19,8 @@
     "recipes": "Рецепты",
     "cart": "Корзина",
     "account": "Аккаунт",
-    "searchPlaceholder": "Поиск товаров, рецептов..."
+    "searchPlaceholder": "Поиск товаров, рецептов...",
+    "wishlist": "Wishlist"
   },
   "home": {
     "hero": "Свежие продукты — доставка к вашей двери",
@@ -232,5 +233,27 @@
     "termsDeliveryContent": "Мы доставляем по адресам в нашей зоне обслуживания. Сроки доставки являются приблизительными и могут варьироваться. Мы не несём ответственности за задержки, вызванные обстоятельствами, не зависящими от нас.",
     "termsReturnsTitle": "Возвраты и возмещения",
     "termsReturnsContent": "Если вы получили повреждённые или неправильные товары, пожалуйста, свяжитесь с нами в течение 24 часов. Мы организуем замену или возврат средств. Скоропортящиеся товары не подлежат возврату, за исключением случаев брака."
+  },
+  "search": {
+    "recentSearches": "Recent searches",
+    "suggestions": "Suggestions",
+    "resultsFor": "Results for: {query}",
+    "seeResults": "See results for \"{query}\"",
+    "clearRecent": "Clear",
+    "noMatches": "No matching products yet"
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "subtitle": "Keep staples close for the next order.",
+    "empty": "Your wishlist is empty",
+    "emptyDesc": "Save products here so repeat shopping takes less effort.",
+    "shopNow": "Browse products",
+    "add": "Add to wishlist",
+    "remove": "Remove from wishlist",
+    "addSuccess": "Added to wishlist",
+    "removeSuccess": "Removed from wishlist",
+    "saveForLater": "Save for later",
+    "savedForLater": "Saved for later",
+    "movedToCart": "Added to cart"
   }
 }

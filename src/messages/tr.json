@@ -19,7 +19,8 @@
     "recipes": "Tarifler",
     "cart": "Sepet",
     "account": "Hesap",
-    "searchPlaceholder": "Ürün, tarif ara..."
+    "searchPlaceholder": "Ürün, tarif ara...",
+    "wishlist": "Wishlist"
   },
   "home": {
     "hero": "Taze market ürünleri, kapınıza teslim",
@@ -131,7 +132,7 @@
     },
     "zoneNote": {
       "FROZEN": "Kullanıma kadar dondurulmuş saklayın",
-      "CHILLED": "2-8\u00b0C'de buzdolabında saklayın",
+      "CHILLED": "2-8°C'de buzdolabında saklayın",
       "AMBIENT": "Serin ve kuru bir yerde saklayın"
     }
   },
@@ -232,5 +233,27 @@
     "termsDeliveryContent": "Hizmet alanımız içindeki adreslere teslimat yapıyoruz. Teslimat süreleri tahminidir ve değişebilir. Kontrolümüz dışındaki koşullardan kaynaklanan gecikmelerden sorumlu değiliz.",
     "termsReturnsTitle": "İadeler ve Geri Ödemeler",
     "termsReturnsContent": "Hasarlı veya yanlış ürün almanız halinde lütfen 24 saat içinde bizimle iletişime geçin. Yenisini göndeririz veya iade yaparız. Bozulabilir ürünler, kusurlu olmadıkça iade edilemez."
+  },
+  "search": {
+    "recentSearches": "Recent searches",
+    "suggestions": "Suggestions",
+    "resultsFor": "Results for: {query}",
+    "seeResults": "See results for \"{query}\"",
+    "clearRecent": "Clear",
+    "noMatches": "No matching products yet"
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "subtitle": "Keep staples close for the next order.",
+    "empty": "Your wishlist is empty",
+    "emptyDesc": "Save products here so repeat shopping takes less effort.",
+    "shopNow": "Browse products",
+    "add": "Add to wishlist",
+    "remove": "Remove from wishlist",
+    "addSuccess": "Added to wishlist",
+    "removeSuccess": "Removed from wishlist",
+    "saveForLater": "Save for later",
+    "savedForLater": "Saved for later",
+    "movedToCart": "Added to cart"
   }
 }
