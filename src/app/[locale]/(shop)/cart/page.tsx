@@ -17,12 +17,15 @@ export default function CartPage() {
   const tCommon = useTranslations('common');
   const tWishlist = useTranslations('wishlist');
   const isHydrated = useHydrated();
+  const initialized = useCartStore((state) => state.initialized);
+  const itemCount = useCartStore((state) => state.getItemCount());
   const { items, removeItem, updateQuantity, getSubtotal, getItemsByZone } = useCartStore();
   const addWishlistItem = useWishlistStore((state) => state.addItem);
 
-  const displayItems = isHydrated ? items : [];
-  const subtotal = isHydrated ? getSubtotal() : 0;
-  const itemsByZone = isHydrated ? getItemsByZone() : {};
+  const displayItems = isHydrated && initialized ? items : [];
+  const subtotal = isHydrated && initialized ? getSubtotal() : 0;
+  const currency = displayItems[0]?.currency ?? 'PLN';
+  const itemsByZone = isHydrated && initialized ? getItemsByZone() : {};
   const hasZones = Object.keys(itemsByZone).length > 1 || !itemsByZone['OTHER'];
 
   async function handleSaveForLater(item: CartItem) {
@@ -42,7 +45,7 @@ export default function CartPage() {
       return;
     }
 
-    removeItem(item.variantId);
+    removeItem(item.id);
     toast.success(tWishlist('savedForLater'));
   }
 
@@ -50,7 +53,7 @@ export default function CartPage() {
     const imageUrl = getImageSrc(item.thumbnail);
 
     return (
-      <div key={item.variantId} className="flex items-center gap-3 px-4 py-3" style={{ backgroundColor: 'var(--color-card)' }}>
+      <div key={item.id} className="flex items-center gap-3 px-4 py-3" style={{ backgroundColor: 'var(--color-card)' }}>
         {/* Thumbnail */}
         <div className="shrink-0 w-14 h-14 rounded-lg overflow-hidden" style={{ backgroundColor: 'var(--color-muted)' }}>
           {imageUrl ? (
@@ -92,7 +95,7 @@ export default function CartPage() {
         <div className="flex items-center gap-0.5 border rounded-lg" style={{ borderColor: 'var(--color-border)' }}>
           <button
             type="button"
-            onClick={() => updateQuantity(item.variantId, item.quantity - 1)}
+            onClick={() => updateQuantity(item.id, item.quantity - 1)}
             className="w-11 h-11 flex items-center justify-center transition-colors duration-fast hover-surface"
             aria-label={`Decrease ${item.name} quantity`}
           >
@@ -103,7 +106,7 @@ export default function CartPage() {
           </span>
           <button
             type="button"
-            onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
+            onClick={() => updateQuantity(item.id, item.quantity + 1)}
             className="w-11 h-11 flex items-center justify-center transition-colors duration-fast hover-surface"
             aria-label={`Increase ${item.name} quantity`}
           >
@@ -113,13 +116,13 @@ export default function CartPage() {
 
         {/* Line total */}
         <span className="text-sm font-bold tabular-nums w-20 text-right" style={{ color: 'var(--color-foreground)' }}>
-          {formatPrice(item.price * item.quantity, item.currency)}
+          {formatPrice(item.totalPrice ?? item.price * item.quantity, item.currency)}
         </span>
 
         {/* Remove — 44px touch target */}
         <button
           type="button"
-          onClick={() => removeItem(item.variantId)}
+          onClick={() => removeItem(item.id)}
           className="w-11 h-11 flex items-center justify-center rounded-lg transition-colors duration-fast hover-surface"
           aria-label={`${t('remove')} ${item.name}`}
         >
@@ -129,7 +132,7 @@ export default function CartPage() {
     );
   }
 
-  if (!isHydrated) {
+  if (!isHydrated || !initialized) {
     return (
       <div className="container-grocery py-16 text-center">
         <ShoppingCart className="w-16 h-16 mx-auto mb-4 opacity-20" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
@@ -160,7 +163,7 @@ export default function CartPage() {
       <h1 className="heading-display text-2xl md:text-3xl mb-6" style={{ color: 'var(--color-foreground)' }}>
         {t('title')}
         <span className="text-base font-normal ml-2 tabular-nums" style={{ color: 'var(--color-muted-foreground)' }}>
-          ({displayItems.length})
+          ({isHydrated && initialized ? itemCount : 0})
         </span>
       </h1>
 
@@ -189,7 +192,7 @@ export default function CartPage() {
               <div className="flex justify-between text-sm">
                 <span style={{ color: 'var(--color-muted-foreground)' }}>{t('subtotal')}</span>
                 <span className="font-medium tabular-nums" style={{ color: 'var(--color-foreground)' }}>
-                  {formatPrice(subtotal)}
+                  {formatPrice(subtotal, currency)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -203,7 +206,7 @@ export default function CartPage() {
             <div className="border-t pt-3 mb-5 flex justify-between" style={{ borderColor: 'var(--color-border)' }}>
               <span className="font-bold" style={{ color: 'var(--color-foreground)' }}>{t('total')}</span>
               <span className="font-bold text-lg tabular-nums" style={{ color: 'var(--color-foreground)' }}>
-                {formatPrice(subtotal)}
+                {formatPrice(subtotal, currency)}
               </span>
             </div>
 
@@ -227,7 +230,7 @@ export default function CartPage() {
                     <Truck className="w-3.5 h-3.5" aria-hidden="true" />
                     {progress >= 1
                       ? (t('freeShippingReached') || 'You qualify for free shipping!')
-                      : (t('freeShippingRemaining', { amount: formatPrice(remaining) }) || `Add ${formatPrice(remaining)} more for free shipping`)}
+                      : (t('freeShippingRemaining', { amount: formatPrice(remaining, currency) }) || `Add ${formatPrice(remaining, currency)} more for free shipping`)}
                   </p>
                 </div>
               );

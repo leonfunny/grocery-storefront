@@ -1,7 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { UserRound, Package, MapPin, Shield, Heart, ShoppingCart, ChevronRight } from 'lucide-react';
+import { UserRound, MapPin, Shield, Heart, ShoppingCart, ChevronRight } from 'lucide-react';
+import { OrdersPanel } from '@/components/account/OrdersPanel';
 import { Link } from '@/i18n/navigation';
 import { useAuthStore } from '@/stores/auth-store';
 
@@ -44,12 +45,6 @@ export default function AccountPage() {
       title: tAccount('profileTitle'),
       description: tAccount('profileDescription'),
       icon: UserRound,
-    },
-    {
-      id: 'orders',
-      title: tAccount('ordersTitle'),
-      description: tAccount('ordersDescription'),
-      icon: Package,
     },
     {
       id: 'addresses',
@@ -106,6 +101,10 @@ export default function AccountPage() {
             </p>
           </div>
         </div>
+      </div>
+
+      <div className="mt-8">
+        <OrdersPanel />
       </div>
 
       <div className="grid gap-4 mt-8 md:grid-cols-2">

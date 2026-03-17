@@ -12,11 +12,11 @@
     "save": "Zapisz",
     "cancel": "Anuluj",
     "currency": "PLN",
-    "changeLanguage": "Zmie? j?zyk",
-    "selectLanguage": "Wybierz j?zyk",
-    "openSearch": "Otw?rz wyszukiwark?",
-    "closeSearch": "Zamknij wyszukiwark?",
-    "openMenu": "Otw?rz menu",
+    "changeLanguage": "Zmień język",
+    "selectLanguage": "Wybierz język",
+    "openSearch": "Otwórz wyszukiwarkę",
+    "closeSearch": "Zamknij wyszukiwarkę",
+    "openMenu": "Otwórz menu",
     "closeMenu": "Zamknij menu",
     "itemCount": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}",
     "viewAllProducts": "Zobacz wszystkie produkty",
@@ -66,7 +66,7 @@
     "banner3Sub": "Uzupełnij zapasy mrożonych dań i składników",
     "banner3Cta": "Kup mrożone",
     "seeAllProducts": "Zobacz wszystkie produkty",
-    "productsEmpty": "Brak dost?pnych produkt?w.",
+    "productsEmpty": "Brak dostępnych produktów.",
     "shopZoneAria": "Kup produkty ze strefy {zone}"
   },
   "products": {
@@ -118,9 +118,9 @@
     },
     "quantityUnitShort": "szt.",
     "storageAria": "Przechowywanie: {zone}",
-    "decreaseQuantity": "Zmniejsz ilo?? produktu {name}",
-    "increaseQuantity": "Zwi?ksz ilo?? produktu {name}",
-    "addToCartWithQuantity": "Dodaj do koszyka, ilo?? {quantity}"
+    "decreaseQuantity": "Zmniejsz ilość produktu {name}",
+    "increaseQuantity": "Zwiększ ilość produktu {name}",
+    "addToCartWithQuantity": "Dodaj do koszyka, ilość {quantity}"
   },
   "wishlist": {
     "title": "Ulubione",
@@ -177,7 +177,7 @@
       "CHILLED": "Przechowywać w lodówce w temp. 2-8°C",
       "AMBIENT": "Przechowywać w chłodnym, suchym miejscu"
     },
-    "groupedByStorageZone": "Pozycje w koszyku wed?ug strefy przechowywania",
+    "groupedByStorageZone": "Pozycje w koszyku według strefy przechowywania",
     "zoneSectionAria": "{zone}, {countLabel}"
   },
   "checkout": {
@@ -316,32 +316,32 @@
   "account": {
     "greeting": "Witaj",
     "menuAccount": "Moje konto",
-    "menuOrders": "Moje zam?wienia",
+    "menuOrders": "Moje zamówienia",
     "menuAddresses": "Adresy",
-    "menuSecurity": "Bezpiecze?stwo",
+    "menuSecurity": "Bezpieczeństwo",
     "title": "Moje konto",
-    "subtitle": "Zarz?dzaj ustawieniami konta i szybkim dost?pem do zakup?w.",
-    "loginTitle": "Zaloguj si?, aby przej?? do konta",
-    "loginDescription": "Panel konta jest dost?pny tylko dla zalogowanych klient?w.",
-    "loginAction": "Przejd? do logowania",
-    "status": "Wkr?tce",
+    "subtitle": "Zarządzaj ustawieniami konta i szybkim dostępem do zakupów.",
+    "loginTitle": "Zaloguj się, aby przejść do konta",
+    "loginDescription": "Panel konta jest dostępny tylko dla zalogowanych klientów.",
+    "loginAction": "Przejdź do logowania",
+    "status": "Wkrótce",
     "profileTitle": "Profil",
     "profileDescription": "Dane osobowe, preferencje i podstawowe ustawienia konta.",
-    "ordersTitle": "Zam?wienia",
-    "ordersDescription": "Historia zam?wie? i statusy pojawi? si? po pod??czeniu CRM.",
+    "ordersTitle": "Zamówienia",
+    "ordersDescription": "Historia zamówień i statusy pojawią się po podłączeniu CRM.",
     "addressesTitle": "Adresy",
-    "addressesDescription": "Zapisane adresy dostawy i domy?lne dane do zam?wie?.",
-    "securityTitle": "Bezpiecze?stwo",
-    "securityDescription": "Zmiana has?a i ustawienia bezpiecze?stwa logowania.",
-    "shortcutsTitle": "Skr?ty",
-    "shortcutsDescription": "Miejsca, do kt?rych najcz??ciej wracasz po zalogowaniu.",
+    "addressesDescription": "Zapisane adresy dostawy i domyślne dane do zamówień.",
+    "securityTitle": "Bezpieczeństwo",
+    "securityDescription": "Zmiana hasła i ustawienia bezpieczeństwa logowania.",
+    "shortcutsTitle": "Skróty",
+    "shortcutsDescription": "Miejsca, do których najczęściej wracasz po zalogowaniu.",
     "signedInAs": "Zalogowano jako",
-    "wishlistShortcutDescription": "Przejd? do zapisanych produkt?w.",
-    "cartShortcutDescription": "Wr?? do koszyka i doko?cz zakupy."
+    "wishlistShortcutDescription": "Przejdź do zapisanych produktów.",
+    "cartShortcutDescription": "Wróć do koszyka i dokończ zakupy."
   },
   "theme": {
     "light": "Jasny",
     "dark": "Ciemny",
-    "switchTo": "Prze??cz na motyw {theme}"
+    "switchTo": "Przełącz na motyw {theme}"
   }
 }

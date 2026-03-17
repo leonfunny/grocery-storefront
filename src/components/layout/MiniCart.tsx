@@ -14,14 +14,15 @@ export function MiniCart() {
   const tCart = useTranslations('cart');
   const tNav = useTranslations('nav');
   const items = useCartStore((state) => state.items);
+  const initialized = useCartStore((state) => state.initialized);
   const itemCount = useCartStore((state) => state.getItemCount());
   const subtotal = useCartStore((state) => state.getSubtotal());
   const removeItem = useCartStore((state) => state.removeItem);
   const [isOpen, setIsOpen] = useState(false);
   const isHydrated = useHydrated();
-  const displayItems = isHydrated ? items : [];
-  const displayItemCount = isHydrated ? itemCount : 0;
-  const displaySubtotal = isHydrated ? subtotal : 0;
+  const displayItems = isHydrated && initialized ? items : [];
+  const displayItemCount = isHydrated && initialized ? itemCount : 0;
+  const displaySubtotal = isHydrated && initialized ? subtotal : 0;
   const subtotalCurrency = displayItems[0]?.currency ?? 'PLN';
 
   function handleBlurCapture(event: FocusEvent<HTMLDivElement>) {
@@ -138,7 +139,7 @@ export function MiniCart() {
                     const productHref = item.slug ? `/products/${item.slug}` : '/cart';
 
                     return (
-                      <li key={item.variantId} className="grid grid-cols-[56px,1fr,auto] items-start gap-3 py-4">
+                      <li key={item.id} className="grid grid-cols-[56px,1fr,auto] items-start gap-3 py-4">
                         <Link
                           href={productHref}
                           className="relative block h-14 w-14 overflow-hidden rounded-xl"
@@ -178,14 +179,14 @@ export function MiniCart() {
                               {item.quantity} x {formatPrice(item.price, item.currency)}
                             </p>
                             <p className="text-xs font-medium tabular-nums" style={{ color: 'var(--color-muted-foreground)' }}>
-                              {formatPrice(item.price * item.quantity, item.currency)}
+                              {formatPrice(item.totalPrice ?? item.price * item.quantity, item.currency)}
                             </p>
                           </div>
                         </div>
 
                         <button
                           type="button"
-                          onClick={() => removeItem(item.variantId)}
+                          onClick={() => removeItem(item.id)}
                           className="flex h-8 w-8 items-center justify-center rounded-full transition-colors duration-fast hover-surface"
                           aria-label={`${tCart('remove')} ${item.name}`}
                         >

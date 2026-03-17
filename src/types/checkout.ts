@@ -28,9 +28,37 @@ export interface ShippingMethod {
 export interface PaymentMethod {
   id: string;
   name: string;
+  code?: string;
   description?: string;
   provider?: string;
   methodType?: string;
   iconUrl?: string;
   fee?: { amount: number; currency: string };
+}
+
+export interface CartToCheckoutPayload {
+  email: string;
+  note?: string;
+  promoCode?: string;
+  lines: Array<{
+    variantId: string;
+    quantity: number;
+  }>;
+  shippingAddress: {
+    firstName: string;
+    lastName: string;
+    streetAddress1: string;
+    city: string;
+    postalCode: string;
+    country: string;
+    phone?: string;
+  };
+  selectedDeliveryOption?: {
+    id: string;
+    name: string;
+    price: {
+      amount: number;
+      currency: string;
+    };
+  } | null;
 }

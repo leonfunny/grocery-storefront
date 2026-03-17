@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import Script from 'next/script';
 import { GraphQLProvider } from '@/lib/graphql/provider';
+import { CartBootstrap } from '@/components/CartBootstrap';
 import { SalonLoader } from '@/components/SalonLoader';
 import { SessionBootstrap } from '@/components/SessionBootstrap';
 import { AppToaster } from '@/components/layout/AppToaster';
@@ -29,6 +30,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <GraphQLProvider>
           {!process.env.NEXT_PUBLIC_CHANNEL && <SalonLoader />}
           <SessionBootstrap />
+          <CartBootstrap />
           {children}
         </GraphQLProvider>
         <AppToaster />

@@ -23,6 +23,7 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const itemCount = useCartStore((s) => s.getItemCount());
+  const cartInitialized = useCartStore((s) => s.initialized);
   const wishlistCount = useWishlistStore((s) => s.items.length);
   const session = useAuthStore((s) => s.session);
   const logout = useAuthStore((s) => s.logout);
@@ -220,10 +221,10 @@ export function Header() {
           <Link
             href="/cart"
             className="relative p-2.5 rounded-xl hover-surface md:hidden"
-            aria-label={`${t('cart')}${isMounted && itemCount > 0 ? `, ${tCommon('itemCount', { count: itemCount })}` : ''}`}
+            aria-label={`${t('cart')}${isMounted && cartInitialized && itemCount > 0 ? `, ${tCommon('itemCount', { count: itemCount })}` : ''}`}
           >
             <ShoppingCart className="w-5 h-5" style={{ color: 'var(--color-foreground)' }} />
-            {isMounted && itemCount > 0 && (
+            {isMounted && cartInitialized && itemCount > 0 && (
               <span
                 className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
                 style={{ backgroundColor: 'var(--color-primary)' }}
@@ -346,7 +347,7 @@ export function Header() {
             { href: '/products', label: t('products') },
             { href: '/recipes', label: t('recipes') },
             { href: '/wishlist', label: `${t('wishlist')}${isMounted && wishlistCount > 0 ? ` (${wishlistCount})` : ''}` },
-            { href: '/cart', label: `${t('cart')}${isMounted && itemCount > 0 ? ` (${itemCount})` : ''}` },
+            { href: '/cart', label: `${t('cart')}${isMounted && cartInitialized && itemCount > 0 ? ` (${itemCount})` : ''}` },
           ].map(({ href, label }) => (
             <Link
               key={href}

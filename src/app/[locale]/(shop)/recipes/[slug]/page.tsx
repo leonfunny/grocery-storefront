@@ -80,19 +80,38 @@ export default function RecipeDetailPage() {
   const imageUrl = getImageSrc(recipe.thumbnail?.url);
 
   function addAllToCart() {
-    for (const ingredient of availableIngredients) {
-      addItem({
-        productId: ingredient.product?.id || ingredient.variant.id,
-        variantId: ingredient.variant.id,
-        slug: ingredient.product?.slug,
-        name: ingredient.variant.name || ingredient.displayName,
-        thumbnail: getImageSrc(ingredient.product?.thumbnail?.url) || undefined,
-        price: ingredient.variant.pricing?.price?.gross?.amount ?? 0,
-        currency: ingredient.variant.pricing?.price?.gross?.currency ?? 'PLN',
-        quantity: Math.ceil(ingredient.quantity),
-      });
-    }
-    toast.success(`Added ${availableIngredients.length} items to cart`);
+    void (async () => {
+      let successCount = 0;
+
+      for (const ingredient of availableIngredients) {
+        const success = await addItem({
+          productId: ingredient.product?.id || ingredient.variant.id,
+          variantId: ingredient.variant.id,
+          slug: ingredient.product?.slug,
+          name: ingredient.variant.name || ingredient.displayName,
+          thumbnail: getImageSrc(ingredient.product?.thumbnail?.url) || undefined,
+          price: ingredient.variant.pricing?.price?.gross?.amount ?? 0,
+          currency: ingredient.variant.pricing?.price?.gross?.currency ?? 'PLN',
+          quantity: Math.ceil(ingredient.quantity),
+        });
+
+        if (success) {
+          successCount += 1;
+        }
+      }
+
+      if (successCount === 0) {
+        toast.error(tCommon('error'));
+        return;
+      }
+
+      if (successCount < availableIngredients.length) {
+        toast.error(`Only ${successCount} of ${availableIngredients.length} items were added.`);
+        return;
+      }
+
+      toast.success(`Added ${availableIngredients.length} items to cart`);
+    })();
   }
 
   return (

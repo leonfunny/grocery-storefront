@@ -24,19 +24,27 @@ export default function WishlistPage() {
     const item = items.find((entry) => entry.productId === productId);
     if (!item) return;
 
-    addCartItem({
-      productId: item.productId,
-      variantId: item.variantId,
-      slug: item.slug,
-      name: item.name,
-      thumbnail: item.thumbnail,
-      price: item.price,
-      currency: item.currency,
-      quantity: item.quantity,
-      storageZone: item.storageZone,
-    });
-    void removeItem(item.productId);
-    toast.success(t('movedToCart'));
+    void (async () => {
+      const success = await addCartItem({
+        productId: item.productId,
+        variantId: item.variantId,
+        slug: item.slug,
+        name: item.name,
+        thumbnail: item.thumbnail,
+        price: item.price,
+        currency: item.currency,
+        quantity: item.quantity,
+        storageZone: item.storageZone,
+      });
+
+      if (!success) {
+        toast.error(tCommon('error'));
+        return;
+      }
+
+      await removeItem(item.productId);
+      toast.success(t('movedToCart'));
+    })();
   }
 
   if (!isHydrated || (isLoading && displayItems.length === 0)) {

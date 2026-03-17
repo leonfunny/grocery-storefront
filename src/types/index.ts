@@ -121,6 +121,8 @@ export interface RecipeIngredient {
 }
 
 export interface CartItem {
+  id: string;
+  merchandiseId: string;
   productId: string;
   variantId: string;
   slug?: string;
@@ -129,8 +131,63 @@ export interface CartItem {
   price: number;
   currency: string;
   quantity: number;
+  totalPrice?: number;
   storageZone?: StorageZone;
   allergens?: string[];
+}
+
+export interface CartMoney {
+  amount: number;
+  currency: string;
+}
+
+export interface CartCost {
+  subtotalAmount?: CartMoney | null;
+  totalAmount?: CartMoney | null;
+  totalTaxAmount?: CartMoney | null;
+  totalDutyAmount?: CartMoney | null;
+}
+
+export interface CartBuyerIdentity {
+  email?: string | null;
+  phone?: string | null;
+  countryCode?: string | null;
+}
+
+export interface CartAttribute {
+  key: string;
+  value: string;
+}
+
+export interface CartDiscountCode {
+  code: string;
+  applicable: boolean;
+}
+
+export interface CartDeliveryOption {
+  id: string;
+  name: string;
+  price: CartMoney;
+  estimatedDeliveryTime?: string | null;
+}
+
+export interface CartSelectedDeliveryOption {
+  deliveryGroupId: string;
+  deliveryOptionHandle: string;
+}
+
+export interface ServerCart {
+  id: string;
+  items: CartItem[];
+  cost: CartCost;
+  buyerIdentity: CartBuyerIdentity | null;
+  note?: string | null;
+  attributes: CartAttribute[];
+  discountCodes: CartDiscountCode[];
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  deliveryOptions: CartDeliveryOption[];
+  selectedDeliveryOption: CartDeliveryOption | null;
 }
 
 export interface WishlistItem {
@@ -166,6 +223,63 @@ export interface AuthSession {
   token: string | null;
   user: CustomerProfile | null;
   status: AuthStatus;
+}
+
+export interface OrderAddress {
+  streetAddress1?: string | null;
+  city?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+}
+
+export interface CustomerOrderLine {
+  productName?: string | null;
+  variantName?: string | null;
+  quantity: number;
+  unitPrice?: {
+    gross: {
+      amount: number;
+      currency: string;
+    };
+  } | null;
+  totalPrice?: {
+    gross: {
+      amount: number;
+      currency: string;
+    };
+  } | null;
+  thumbnail?: {
+    url?: string | null;
+  } | null;
+}
+
+export interface CustomerOrderSummary {
+  id: string;
+  number: string;
+  status: string;
+  created: string;
+  total: {
+    gross: {
+      amount: number;
+      currency: string;
+    };
+  };
+  lines: CustomerOrderLine[];
+}
+
+export interface CustomerOrderDetail extends CustomerOrderSummary {
+  shippingAddress?: OrderAddress | null;
+  billingAddress?: OrderAddress | null;
+  shippingMethodName?: string | null;
+  subtotal?: {
+    gross: {
+      amount: number;
+      currency: string;
+    };
+  } | null;
+  shippingPrice?: CartMoney | null;
+  paymentStatus?: string | null;
+  trackingNumber?: string | null;
 }
 
 export interface WishlistServerItem {

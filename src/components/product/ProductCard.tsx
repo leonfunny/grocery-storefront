@@ -49,21 +49,29 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
     e.preventDefault();
     e.stopPropagation();
     if (!variant || !inStock) return;
-    addItem({
-      productId: product.id,
-      variantId: variant.id,
-      slug: product.slug,
-      name: product.name,
-      thumbnail: imageUrl || undefined,
-      price,
-      currency,
-      quantity,
-      storageZone: product.storageZone,
-      allergens: product.allergens,
-    });
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1200);
-    toast.success(t('product.addToCartSuccess'));
+    void (async () => {
+      const success = await addItem({
+        productId: product.id,
+        variantId: variant.id,
+        slug: product.slug,
+        name: product.name,
+        thumbnail: imageUrl || undefined,
+        price,
+        currency,
+        quantity,
+        storageZone: product.storageZone,
+        allergens: product.allergens,
+      });
+
+      if (!success) {
+        toast.error(t('common.error'));
+        return;
+      }
+
+      setJustAdded(true);
+      setTimeout(() => setJustAdded(false), 1200);
+      toast.success(t('product.addToCartSuccess'));
+    })();
   }
 
   function handleWishlistToggle(e: React.MouseEvent) {
