@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getLocale } from 'next-intl/server';
 import Script from 'next/script';
 import { GraphQLProvider } from '@/lib/graphql/provider';
 import { SalonLoader } from '@/components/SalonLoader';
@@ -11,9 +12,11 @@ export const metadata: Metadata = {
   description: process.env.NEXT_PUBLIC_STORE_DESCRIPTION || 'Fresh groceries with full nutritional transparency',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+
   return (
-    <html lang="pl" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <Script id="theme-init" strategy="beforeInteractive">
           {`try {

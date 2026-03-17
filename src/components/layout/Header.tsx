@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ShoppingCart, Search, Menu, X, Leaf, Heart, LogIn, LogOut, UserRound, ChevronDown, Package, MapPin, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useRouter } from '@/i18n/navigation';
@@ -14,9 +14,10 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 
 export function Header() {
-  const locale = useLocale();
   const t = useTranslations('nav');
   const tAuth = useTranslations('auth');
+  const tAccount = useTranslations('account');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -39,26 +40,11 @@ export function Header() {
 
   const isAuthenticated = isMounted && session.status === 'authenticated';
   const accountName = session.user?.fullName?.split(' ')[0] || t('account');
-  const accountMenuLabels = locale === 'pl'
-    ? {
-        greeting: 'Witaj',
-        account: 'Moje konto',
-        orders: 'Moje zamówienia',
-        addresses: 'Adresy',
-        security: 'Bezpieczeństwo',
-      }
-    : {
-        greeting: 'Hello',
-        account: 'My account',
-        orders: 'Orders',
-        addresses: 'Addresses',
-        security: 'Security',
-      };
   const accountMenuItems = [
-    { href: '/account#profile', label: accountMenuLabels.account, icon: UserRound },
-    { href: '/account#orders', label: accountMenuLabels.orders, icon: Package },
-    { href: '/account#addresses', label: accountMenuLabels.addresses, icon: MapPin },
-    { href: '/account#security', label: accountMenuLabels.security, icon: Shield },
+    { href: '/account#profile', label: tAccount('menuAccount'), icon: UserRound },
+    { href: '/account#orders', label: tAccount('menuOrders'), icon: Package },
+    { href: '/account#addresses', label: tAccount('menuAddresses'), icon: MapPin },
+    { href: '/account#security', label: tAccount('menuSecurity'), icon: Shield },
     { href: '/wishlist', label: t('wishlist'), icon: Heart },
     { href: '/cart', label: t('cart'), icon: ShoppingCart },
   ];
@@ -126,7 +112,7 @@ export function Header() {
             type="button"
             className="md:hidden p-2.5 rounded-xl hover-surface"
             onClick={() => setSearchOpen(!searchOpen)}
-            aria-label={searchOpen ? 'Close search' : 'Open search'}
+            aria-label={searchOpen ? tCommon('closeSearch') : tCommon('openSearch')}
             aria-expanded={searchOpen}
           >
             {searchOpen ? (
@@ -142,7 +128,7 @@ export function Header() {
           <Link
             href="/wishlist"
             className="relative p-2.5 rounded-xl hover-surface"
-            aria-label={`${t('wishlist')}${isMounted && wishlistCount > 0 ? `, ${wishlistCount} items` : ''}`}
+            aria-label={`${t('wishlist')}${isMounted && wishlistCount > 0 ? `, ${tCommon('itemCount', { count: wishlistCount })}` : ''}`}
           >
             <Heart className="w-5 h-5" style={{ color: 'var(--color-foreground)' }} />
             {isMounted && wishlistCount > 0 && (
@@ -182,7 +168,7 @@ export function Header() {
                 >
                   <div className="px-2 pt-1 pb-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
                     <p className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--color-muted-foreground)' }}>
-                      {accountMenuLabels.greeting}
+                      {tAccount('greeting')}
                     </p>
                     <p className="mt-1 text-sm font-semibold truncate" style={{ color: 'var(--color-foreground)' }}>
                       {session.user?.fullName || t('account')}
@@ -234,7 +220,7 @@ export function Header() {
           <Link
             href="/cart"
             className="relative p-2.5 rounded-xl hover-surface md:hidden"
-            aria-label={`${t('cart')}${isMounted && itemCount > 0 ? `, ${itemCount} items` : ''}`}
+            aria-label={`${t('cart')}${isMounted && itemCount > 0 ? `, ${tCommon('itemCount', { count: itemCount })}` : ''}`}
           >
             <ShoppingCart className="w-5 h-5" style={{ color: 'var(--color-foreground)' }} />
             {isMounted && itemCount > 0 && (
@@ -270,7 +256,7 @@ export function Header() {
             type="button"
             className="md:hidden p-2.5 rounded-xl hover-surface"
             onClick={() => setMenuOpen(!menuOpen)}
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-label={menuOpen ? tCommon('closeMenu') : tCommon('openMenu')}
             aria-expanded={menuOpen}
             aria-controls="mobile-nav"
           >
@@ -323,7 +309,7 @@ export function Header() {
                 style={{ borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}
                 onClick={() => setMenuOpen(false)}
               >
-                {accountMenuLabels.account}
+                {tAccount('menuAccount')}
               </Link>
               <button
                 type="button"

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { ShoppingCart, Info, Package, Check, Minus, Plus, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { FreshnessBadge } from '@/components/grocery/FreshnessBadge';
@@ -19,7 +19,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, imagePriority = false }: ProductCardProps) {
-  const locale = useLocale();
   const t = useTranslations();
   const addItem = useCartStore((s) => s.addItem);
   const addWishlistItem = useWishlistStore((s) => s.addItem);
@@ -35,8 +34,8 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
   const currency = variant?.pricing?.price?.gross?.currency ?? (product as any).pricing?.priceRange?.start?.gross?.currency ?? 'PLN';
   const imageUrl = getImageSrc(product.thumbnail?.url);
   const maxQuantity = Math.max(1, variant?.quantityAvailable ?? (product as any)?.quantityAvailable ?? 99);
-  const quantityUnitLabel = locale === 'pl' ? 'szt.' : 'pcs';
-  const addToCartLabel = locale === 'pl' ? 'do koszyka' : t('common.addToCart');
+  const quantityUnitLabel = t('product.quantityUnitShort');
+  const addToCartLabel = t('common.addToCart');
 
   function updateQuantity(e: React.MouseEvent, delta: number) {
     e.preventDefault();
@@ -159,7 +158,7 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
             {product.storageZone && (
               <span
                 className={`px-2 py-0.5 rounded-md text-[10px] font-bold text-white zone-${product.storageZone.toLowerCase()}`}
-                aria-label={`Storage: ${product.storageZone.toLowerCase()}`}
+                aria-label={t('product.storageAria', { zone: t(`cart.zoneGroup.${product.storageZone}` as any) })}
               >
                 {product.storageZone === 'FROZEN' ? '\u2744' : product.storageZone === 'CHILLED' ? '\u2603' : '\u2600'}
               </span>
@@ -245,7 +244,7 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
                     onClick={(e) => updateQuantity(e, -1)}
                     disabled={!inStock || quantity <= 1}
                     className="flex items-center justify-center transition-all duration-fast hover-surface disabled:opacity-40"
-                    aria-label={`Decrease ${product.name} quantity`}
+                    aria-label={t('product.decreaseQuantity', { name: product.name })}
                   >
                     <Minus className="w-4 h-4 opacity-80 transition-opacity duration-fast group-hover/quantity:opacity-100" aria-hidden="true" />
                   </button>
@@ -261,7 +260,7 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
                     onClick={(e) => updateQuantity(e, 1)}
                     disabled={!inStock || quantity >= maxQuantity}
                     className="flex items-center justify-center transition-all duration-fast hover-surface disabled:opacity-40"
-                    aria-label={`Increase ${product.name} quantity`}
+                    aria-label={t('product.increaseQuantity', { name: product.name })}
                   >
                     <Plus className="w-4 h-4 opacity-80 transition-opacity duration-fast group-hover/quantity:opacity-100" aria-hidden="true" />
                   </button>
@@ -283,7 +282,7 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
                   backgroundColor: justAdded ? 'var(--color-fresh)' : inStock ? 'var(--color-primary)' : 'var(--color-muted)',
                   color: inStock ? 'white' : 'var(--color-muted-foreground)',
                 }}
-                aria-label={inStock ? `${addToCartLabel}, quantity ${quantity}` : t('product.outOfStock')}
+                aria-label={inStock ? t('product.addToCartWithQuantity', { quantity }) : t('product.outOfStock')}
               >
                 {justAdded ? (
                   <Check className="w-4 h-4" aria-hidden="true" />

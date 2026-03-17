@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { Globe } from 'lucide-react';
 import { locales } from '@/i18n/config';
@@ -10,27 +10,16 @@ import { usePathname, useRouter } from '@/i18n/navigation';
 const LOCALE_LABELS: Record<string, string> = {
   pl: 'PL',
   en: 'EN',
-  de: 'DE',
-  uk: 'UA',
-  vi: 'VI',
-  ru: 'RU',
-  zh: 'ZH',
-  tr: 'TR',
 };
 
 const LOCALE_NAMES: Record<string, string> = {
   pl: 'Polski',
   en: 'English',
-  de: 'Deutsch',
-  uk: 'Ukrainian',
-  vi: 'Tiếng Việt',
-  ru: 'Russian',
-  zh: 'Chinese',
-  tr: 'Turkish',
 };
 
 export function LanguageSwitcher() {
   const locale = useLocale();
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -62,7 +51,7 @@ export function LanguageSwitcher() {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors duration-150 hover-surface"
         style={{ color: 'var(--color-foreground)' }}
-        aria-label="Change language"
+        aria-label={tCommon('changeLanguage')}
         aria-expanded={open}
         aria-haspopup="listbox"
       >
@@ -78,7 +67,7 @@ export function LanguageSwitcher() {
             backgroundColor: 'var(--color-card)',
           }}
           role="listbox"
-          aria-label="Select language"
+          aria-label={tCommon('selectLanguage')}
         >
           {locales.map((loc) => (
             <button

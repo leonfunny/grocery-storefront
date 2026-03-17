@@ -11,7 +11,16 @@
     "close": "Zamknij",
     "save": "Zapisz",
     "cancel": "Anuluj",
-    "currency": "PLN"
+    "currency": "PLN",
+    "changeLanguage": "Zmie? j?zyk",
+    "selectLanguage": "Wybierz j?zyk",
+    "openSearch": "Otw?rz wyszukiwark?",
+    "closeSearch": "Zamknij wyszukiwark?",
+    "openMenu": "Otw?rz menu",
+    "closeMenu": "Zamknij menu",
+    "itemCount": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}",
+    "viewAllProducts": "Zobacz wszystkie produkty",
+    "viewAllRecipes": "Zobacz wszystkie przepisy"
   },
   "nav": {
     "home": "Strona główna",
@@ -55,7 +64,10 @@
     "banner2Cta": "Przeglądaj oferty",
     "banner3Title": "Ulubione mrożone",
     "banner3Sub": "Uzupełnij zapasy mrożonych dań i składników",
-    "banner3Cta": "Kup mrożone"
+    "banner3Cta": "Kup mrożone",
+    "seeAllProducts": "Zobacz wszystkie produkty",
+    "productsEmpty": "Brak dost?pnych produkt?w.",
+    "shopZoneAria": "Kup produkty ze strefy {zone}"
   },
   "products": {
     "title": "Wszystkie produkty",
@@ -103,7 +115,12 @@
       "fresh": "Świeży",
       "expiringSoon": "Termin mija",
       "lastChance": "Ostatnia szansa"
-    }
+    },
+    "quantityUnitShort": "szt.",
+    "storageAria": "Przechowywanie: {zone}",
+    "decreaseQuantity": "Zmniejsz ilo?? produktu {name}",
+    "increaseQuantity": "Zwi?ksz ilo?? produktu {name}",
+    "addToCartWithQuantity": "Dodaj do koszyka, ilo?? {quantity}"
   },
   "wishlist": {
     "title": "Ulubione",
@@ -159,7 +176,9 @@
       "FROZEN": "Przechowywać w zamrożeniu do momentu użycia",
       "CHILLED": "Przechowywać w lodówce w temp. 2-8°C",
       "AMBIENT": "Przechowywać w chłodnym, suchym miejscu"
-    }
+    },
+    "groupedByStorageZone": "Pozycje w koszyku wed?ug strefy przechowywania",
+    "zoneSectionAria": "{zone}, {countLabel}"
   },
   "checkout": {
     "title": "Podsumowanie zamówienia",
@@ -272,6 +291,9 @@
     "email": "E-mail",
     "emailPlaceholder": "ty@example.com",
     "emailRequired": "Podaj adres e-mail",
+    "phone": "Telefon",
+    "phonePlaceholder": "+48 123 456 789",
+    "optional": "opcjonalnie",
     "password": "Hasło",
     "passwordPlaceholder": "Minimum 8 znaków",
     "passwordRequired": "Podaj hasło",
@@ -290,5 +312,36 @@
     "loginSuccess": "Zalogowano pomyślnie",
     "registerSuccess": "Konto zostało utworzone",
     "logoutSuccess": "Wylogowano pomyślnie"
+  },
+  "account": {
+    "greeting": "Witaj",
+    "menuAccount": "Moje konto",
+    "menuOrders": "Moje zam?wienia",
+    "menuAddresses": "Adresy",
+    "menuSecurity": "Bezpiecze?stwo",
+    "title": "Moje konto",
+    "subtitle": "Zarz?dzaj ustawieniami konta i szybkim dost?pem do zakup?w.",
+    "loginTitle": "Zaloguj si?, aby przej?? do konta",
+    "loginDescription": "Panel konta jest dost?pny tylko dla zalogowanych klient?w.",
+    "loginAction": "Przejd? do logowania",
+    "status": "Wkr?tce",
+    "profileTitle": "Profil",
+    "profileDescription": "Dane osobowe, preferencje i podstawowe ustawienia konta.",
+    "ordersTitle": "Zam?wienia",
+    "ordersDescription": "Historia zam?wie? i statusy pojawi? si? po pod??czeniu CRM.",
+    "addressesTitle": "Adresy",
+    "addressesDescription": "Zapisane adresy dostawy i domy?lne dane do zam?wie?.",
+    "securityTitle": "Bezpiecze?stwo",
+    "securityDescription": "Zmiana has?a i ustawienia bezpiecze?stwa logowania.",
+    "shortcutsTitle": "Skr?ty",
+    "shortcutsDescription": "Miejsca, do kt?rych najcz??ciej wracasz po zalogowaniu.",
+    "signedInAs": "Zalogowano jako",
+    "wishlistShortcutDescription": "Przejd? do zapisanych produkt?w.",
+    "cartShortcutDescription": "Wr?? do koszyka i doko?cz zakupy."
+  },
+  "theme": {
+    "light": "Jasny",
+    "dark": "Ciemny",
+    "switchTo": "Prze??cz na motyw {theme}"
   }
 }

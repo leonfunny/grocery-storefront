@@ -5,6 +5,7 @@ import { Leaf } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 
 export function Footer() {
+  const tNav = useTranslations('nav');
   const t = useTranslations('footer');
 
   return (
@@ -28,20 +29,20 @@ export function Footer() {
               </span>
             </div>
             <p className="text-sm leading-relaxed max-w-xs" style={{ color: 'var(--color-muted-foreground)' }}>
-              {t('tagline') || 'Fresh groceries with full nutritional transparency.'}
+              {t('tagline')}
             </p>
           </div>
 
-          <nav aria-label="Shop links">
-            <h3 className="heading-section text-sm mb-4" style={{ color: 'var(--color-foreground)' }}>{t('shop') || 'Shop'}</h3>
+          <nav aria-label={t('shop')}>
+            <h3 className="heading-section text-sm mb-4" style={{ color: 'var(--color-foreground)' }}>{t('shop')}</h3>
             <ul className="space-y-2.5" role="list">
-              <li><Link href="/products" className="text-sm transition-colors duration-fast hover:text-primary" style={{ color: 'var(--color-muted-foreground)' }}>Products</Link></li>
-              <li><Link href="/recipes" className="text-sm transition-colors duration-fast hover:text-primary" style={{ color: 'var(--color-muted-foreground)' }}>Recipes</Link></li>
+              <li><Link href="/products" className="text-sm transition-colors duration-fast hover:text-primary" style={{ color: 'var(--color-muted-foreground)' }}>{tNav('products')}</Link></li>
+              <li><Link href="/recipes" className="text-sm transition-colors duration-fast hover:text-primary" style={{ color: 'var(--color-muted-foreground)' }}>{tNav('recipes')}</Link></li>
             </ul>
           </nav>
 
-          <nav aria-label="Company information">
-            <h3 className="heading-section text-sm mb-4" style={{ color: 'var(--color-foreground)' }}>{t('info') || 'Info'}</h3>
+          <nav aria-label={t('info')}>
+            <h3 className="heading-section text-sm mb-4" style={{ color: 'var(--color-foreground)' }}>{t('info')}</h3>
             <ul className="space-y-2.5" role="list">
               <li><Link href="#" className="text-sm transition-colors duration-fast hover:text-primary" style={{ color: 'var(--color-muted-foreground)' }}>{t('about')}</Link></li>
               <li><Link href="#" className="text-sm transition-colors duration-fast hover:text-primary" style={{ color: 'var(--color-muted-foreground)' }}>{t('contact')}</Link></li>
@@ -49,8 +50,8 @@ export function Footer() {
             </ul>
           </nav>
 
-          <nav aria-label="Legal">
-            <h3 className="heading-section text-sm mb-4" style={{ color: 'var(--color-foreground)' }}>{t('legal') || 'Legal'}</h3>
+          <nav aria-label={t('legal')}>
+            <h3 className="heading-section text-sm mb-4" style={{ color: 'var(--color-foreground)' }}>{t('legal')}</h3>
             <ul className="space-y-2.5" role="list">
               <li><Link href="/privacy" className="text-sm transition-colors duration-fast hover:text-primary" style={{ color: 'var(--color-muted-foreground)' }}>{t('privacy')}</Link></li>
               <li><Link href="/terms" className="text-sm transition-colors duration-fast hover:text-primary" style={{ color: 'var(--color-muted-foreground)' }}>{t('terms')}</Link></li>

@@ -81,7 +81,7 @@ interface AuthState {
   isSubmitting: boolean;
   initialize: () => Promise<void>;
   login: (input: { email: string; password: string }) => Promise<AuthActionResult>;
-  register: (input: { fullName: string; email: string; password: string }) => Promise<AuthActionResult>;
+  register: (input: { fullName: string; email: string; password: string; phone?: string }) => Promise<AuthActionResult>;
   logout: () => Promise<void>;
   clearSession: () => void;
 }
@@ -307,12 +307,16 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  register: async ({ fullName, email, password }) => {
+  register: async ({ fullName, email, password, phone }) => {
     set({ isSubmitting: true });
 
     try {
+      const input = phone
+        ? { fullName, email, password, phone }
+        : { fullName, email, password };
+
       const response = await graphqlRequest<RegisterResponse>(CUSTOMER_REGISTER_MUTATION, {
-        input: { fullName, email, password },
+        input,
       });
 
       const topLevelMessage = getGraphqlErrorMessage(response.errors);

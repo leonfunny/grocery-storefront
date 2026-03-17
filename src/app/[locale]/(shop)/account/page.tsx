@@ -1,52 +1,15 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { UserRound, Package, MapPin, Shield, Heart, ShoppingCart, ChevronRight } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { useAuthStore } from '@/stores/auth-store';
 
 export default function AccountPage() {
-  const locale = useLocale();
   const tNav = useTranslations('nav');
+  const tAccount = useTranslations('account');
   const session = useAuthStore((state) => state.session);
   const isAuthenticated = session.status === 'authenticated';
-  const labels = locale === 'pl'
-    ? {
-        title: 'Moje konto',
-        subtitle: 'Zarz\u0105dzaj ustawieniami konta i szybkim dost\u0119pem do zakup\u00f3w.',
-        loginTitle: 'Zaloguj si\u0119, aby przej\u015b\u0107 do konta',
-        loginDescription: 'Panel konta jest dost\u0119pny tylko dla zalogowanych klient\u00f3w.',
-        loginAction: 'Przejd\u017a do logowania',
-        status: 'Wkr\u00f3tce',
-        profileTitle: 'Edycja profilu',
-        profileDescription: 'Dane osobowe, preferencje i podstawowe ustawienia konta.',
-        ordersTitle: 'Twoje zam\u00f3wienia',
-        ordersDescription: 'Historia zam\u00f3wie\u0144 i statusy b\u0119d\u0105 widoczne po pod\u0142\u0105czeniu CRM.',
-        addressesTitle: 'Adresy dostawy',
-        addressesDescription: 'Zapisane adresy i domy\u015blne dane dostawy.',
-        securityTitle: 'Bezpiecze\u0144stwo',
-        securityDescription: 'Zmiana has\u0142a i ustawienia bezpiecze\u0144stwa logowania.',
-        shortcutsTitle: 'Skróty',
-        shortcutsDescription: 'Najcz\u0119\u015bciej u\u017cywane miejsca po zalogowaniu.',
-      }
-    : {
-        title: 'My account',
-        subtitle: 'Manage your account settings and quick shopping access.',
-        loginTitle: 'Sign in to access your account',
-        loginDescription: 'The account hub is only available to authenticated customers.',
-        loginAction: 'Go to login',
-        status: 'Coming soon',
-        profileTitle: 'Profile',
-        profileDescription: 'Personal details, preferences, and basic account settings.',
-        ordersTitle: 'Orders',
-        ordersDescription: 'Order history and statuses will appear once the CRM endpoints are wired in.',
-        addressesTitle: 'Addresses',
-        addressesDescription: 'Saved delivery addresses and default checkout details.',
-        securityTitle: 'Security',
-        securityDescription: 'Password changes and login security settings.',
-        shortcutsTitle: 'Shortcuts',
-        shortcutsDescription: 'The pages you are most likely to need right after sign-in.',
-      };
 
   if (!isAuthenticated) {
     return (
@@ -57,17 +20,17 @@ export default function AccountPage() {
         >
           <UserRound className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
           <h1 className="heading-display text-2xl md:text-3xl" style={{ color: 'var(--color-foreground)' }}>
-            {labels.loginTitle}
+            {tAccount('loginTitle')}
           </h1>
           <p className="mt-3 text-sm md:text-base" style={{ color: 'var(--color-muted-foreground)' }}>
-            {labels.loginDescription}
+            {tAccount('loginDescription')}
           </p>
           <Link
             href="/login"
             className="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-xl font-semibold text-white transition-all duration-fast active:scale-[0.98]"
             style={{ backgroundColor: 'var(--color-primary)' }}
           >
-            <span>{labels.loginAction}</span>
+            <span>{tAccount('loginAction')}</span>
             <ChevronRight className="w-4 h-4" aria-hidden="true" />
           </Link>
         </div>
@@ -78,26 +41,26 @@ export default function AccountPage() {
   const sections = [
     {
       id: 'profile',
-      title: labels.profileTitle,
-      description: labels.profileDescription,
+      title: tAccount('profileTitle'),
+      description: tAccount('profileDescription'),
       icon: UserRound,
     },
     {
       id: 'orders',
-      title: labels.ordersTitle,
-      description: labels.ordersDescription,
+      title: tAccount('ordersTitle'),
+      description: tAccount('ordersDescription'),
       icon: Package,
     },
     {
       id: 'addresses',
-      title: labels.addressesTitle,
-      description: labels.addressesDescription,
+      title: tAccount('addressesTitle'),
+      description: tAccount('addressesDescription'),
       icon: MapPin,
     },
     {
       id: 'security',
-      title: labels.securityTitle,
-      description: labels.securityDescription,
+      title: tAccount('securityTitle'),
+      description: tAccount('securityDescription'),
       icon: Shield,
     },
   ];
@@ -121,10 +84,10 @@ export default function AccountPage() {
               {tNav('account')}
             </p>
             <h1 className="heading-display text-3xl md:text-4xl mt-2" style={{ color: 'var(--color-foreground)' }}>
-              {labels.title}
+              {tAccount('title')}
             </h1>
             <p className="mt-3 max-w-2xl text-sm md:text-base" style={{ color: 'var(--color-muted-foreground)' }}>
-              {labels.subtitle}
+              {tAccount('subtitle')}
             </p>
           </div>
 
@@ -133,7 +96,7 @@ export default function AccountPage() {
             style={{ borderColor: 'var(--color-border)', backgroundColor: 'color-mix(in srgb, var(--color-card) 88%, white)' }}
           >
             <p className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--color-muted-foreground)' }}>
-              {locale === 'pl' ? 'Zalogowano jako' : 'Signed in as'}
+              {tAccount('signedInAs')}
             </p>
             <p className="mt-2 text-base font-semibold truncate" style={{ color: 'var(--color-foreground)' }}>
               {session.user?.fullName || tNav('account')}
@@ -174,7 +137,7 @@ export default function AccountPage() {
                 className="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
                 style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-accent-foreground)' }}
               >
-                {labels.status}
+                {tAccount('status')}
               </span>
             </div>
           </section>
@@ -186,10 +149,10 @@ export default function AccountPage() {
         style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
       >
         <h2 className="text-lg font-semibold" style={{ color: 'var(--color-foreground)' }}>
-          {labels.shortcutsTitle}
+          {tAccount('shortcutsTitle')}
         </h2>
         <p className="text-sm mt-1" style={{ color: 'var(--color-muted-foreground)' }}>
-          {labels.shortcutsDescription}
+          {tAccount('shortcutsDescription')}
         </p>
         <div className="grid gap-3 mt-5 sm:grid-cols-2">
           <Link
@@ -202,7 +165,7 @@ export default function AccountPage() {
               <div>
                 <p className="font-semibold">{tNav('wishlist')}</p>
                 <p className="text-sm" style={{ color: 'var(--color-muted-foreground)' }}>
-                  {locale === 'pl' ? 'Przejd\u017a do zapisanych produkt\u00f3w.' : 'Open your saved products.'}
+                  {tAccount('wishlistShortcutDescription')}
                 </p>
               </div>
             </div>
@@ -218,7 +181,7 @@ export default function AccountPage() {
               <div>
                 <p className="font-semibold">{tNav('cart')}</p>
                 <p className="text-sm" style={{ color: 'var(--color-muted-foreground)' }}>
-                  {locale === 'pl' ? 'Wr\u00f3\u0107 do koszyka i finalizuj zakupy.' : 'Jump back into checkout.'}
+                  {tAccount('cartShortcutDescription')}
                 </p>
               </div>
             </div>

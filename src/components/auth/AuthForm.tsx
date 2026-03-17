@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
-import { UserRound, Mail, Lock, ArrowRight } from 'lucide-react';
+import { UserRound, Mail, Phone, Lock, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Link, useRouter } from '@/i18n/navigation';
@@ -23,6 +23,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const register = useAuthStore((state) => state.register);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +40,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
     const trimmedName = fullName.trim();
     const trimmedEmail = email.trim();
+    const trimmedPhone = phone.trim();
 
     if (mode === 'register' && !trimmedName) {
       setError(t('fullNameRequired'));
@@ -68,7 +70,12 @@ export function AuthForm({ mode }: AuthFormProps) {
     const guestSnapshot = [...useWishlistStore.getState().guestItems];
     const result = mode === 'login'
       ? await login({ email: trimmedEmail, password })
-      : await register({ fullName: trimmedName, email: trimmedEmail, password });
+      : await register({
+          fullName: trimmedName,
+          email: trimmedEmail,
+          password,
+          phone: trimmedPhone || undefined,
+        });
 
     if (!result.success) {
       const message = result.message ?? tCommon('error');
@@ -116,7 +123,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             {!isLogin && (
               <label className="block">
                 <span className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-foreground)' }}>
-                  {t('fullName')}
+                  {t('fullName')} <span style={{ color: 'var(--color-destructive)' }} aria-hidden="true">*</span>
                 </span>
                 <div
                   className="flex items-center gap-3 rounded-2xl border px-4 h-12"
@@ -140,7 +147,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
             <label className="block">
               <span className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-foreground)' }}>
-                {t('email')}
+                {t('email')} <span style={{ color: 'var(--color-destructive)' }} aria-hidden="true">*</span>
               </span>
               <div
                 className="flex items-center gap-3 rounded-2xl border px-4 h-12"
@@ -161,9 +168,38 @@ export function AuthForm({ mode }: AuthFormProps) {
               </div>
             </label>
 
+            {!isLogin && (
+              <label className="block">
+                <span className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-foreground)' }}>
+                  {t('phone')}{' '}
+                  <span className="font-normal" style={{ color: 'var(--color-muted-foreground)' }}>
+                    ({t('optional')})
+                  </span>
+                </span>
+                <div
+                  className="flex items-center gap-3 rounded-2xl border px-4 h-12"
+                  style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background)' }}
+                >
+                  <Phone className="w-4 h-4 shrink-0" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
+                  <input
+                    id="auth-phone"
+                    name="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(event) => setPhone(event.target.value)}
+                    autoComplete="tel"
+                    inputMode="tel"
+                    className="w-full bg-transparent outline-none text-sm"
+                    style={{ color: 'var(--color-foreground)' }}
+                    placeholder={t('phonePlaceholder')}
+                  />
+                </div>
+              </label>
+            )}
+
             <label className="block">
               <span className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-foreground)' }}>
-                {t('password')}
+                {t('password')} <span style={{ color: 'var(--color-destructive)' }} aria-hidden="true">*</span>
               </span>
               <div
                 className="flex items-center gap-3 rounded-2xl border px-4 h-12"
@@ -187,7 +223,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             {!isLogin && (
               <label className="block">
                 <span className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-foreground)' }}>
-                  {t('confirmPassword')}
+                  {t('confirmPassword')} <span style={{ color: 'var(--color-destructive)' }} aria-hidden="true">*</span>
                 </span>
                 <div
                   className="flex items-center gap-3 rounded-2xl border px-4 h-12"

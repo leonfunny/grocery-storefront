@@ -11,7 +11,16 @@
     "close": "Close",
     "save": "Save",
     "cancel": "Cancel",
-    "currency": "PLN"
+    "currency": "PLN",
+    "changeLanguage": "Change language",
+    "selectLanguage": "Select language",
+    "openSearch": "Open search",
+    "closeSearch": "Close search",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "itemCount": "{count, plural, one {# item} other {# items}}",
+    "viewAllProducts": "View all products",
+    "viewAllRecipes": "View all recipes"
   },
   "nav": {
     "home": "Home",
@@ -55,7 +64,10 @@
     "banner2Cta": "Browse deals",
     "banner3Title": "Frozen Favorites",
     "banner3Sub": "Stock up on frozen meals and ingredients",
-    "banner3Cta": "Shop frozen"
+    "banner3Cta": "Shop frozen",
+    "seeAllProducts": "View all products",
+    "productsEmpty": "No products available yet.",
+    "shopZoneAria": "Shop {zone} products"
   },
   "products": {
     "title": "All products",
@@ -103,7 +115,12 @@
       "fresh": "Fresh",
       "expiringSoon": "Expiring soon",
       "lastChance": "Last chance"
-    }
+    },
+    "quantityUnitShort": "pcs",
+    "storageAria": "Storage: {zone}",
+    "decreaseQuantity": "Decrease {name} quantity",
+    "increaseQuantity": "Increase {name} quantity",
+    "addToCartWithQuantity": "Add to cart, quantity {quantity}"
   },
   "wishlist": {
     "title": "Wishlist",
@@ -159,7 +176,9 @@
       "FROZEN": "Keep frozen until use",
       "CHILLED": "Refrigerate at 2-8°C",
       "AMBIENT": "Store in a cool, dry place"
-    }
+    },
+    "groupedByStorageZone": "Cart items grouped by storage zone",
+    "zoneSectionAria": "{zone}, {countLabel}"
   },
   "checkout": {
     "title": "Checkout",
@@ -272,6 +291,9 @@
     "email": "Email",
     "emailPlaceholder": "you@example.com",
     "emailRequired": "Please enter your email",
+    "phone": "Phone",
+    "phonePlaceholder": "+48 123 456 789",
+    "optional": "optional",
     "password": "Password",
     "passwordPlaceholder": "At least 8 characters",
     "passwordRequired": "Please enter your password",
@@ -290,5 +312,36 @@
     "loginSuccess": "Signed in successfully",
     "registerSuccess": "Account created successfully",
     "logoutSuccess": "Signed out successfully"
+  },
+  "account": {
+    "greeting": "Hello",
+    "menuAccount": "My account",
+    "menuOrders": "Orders",
+    "menuAddresses": "Addresses",
+    "menuSecurity": "Security",
+    "title": "My account",
+    "subtitle": "Manage your account settings and quick shopping access.",
+    "loginTitle": "Sign in to access your account",
+    "loginDescription": "The account hub is only available to authenticated customers.",
+    "loginAction": "Go to login",
+    "status": "Coming soon",
+    "profileTitle": "Profile",
+    "profileDescription": "Personal details, preferences, and basic account settings.",
+    "ordersTitle": "Orders",
+    "ordersDescription": "Order history and statuses will appear once the CRM endpoints are wired in.",
+    "addressesTitle": "Addresses",
+    "addressesDescription": "Saved delivery addresses and default checkout details.",
+    "securityTitle": "Security",
+    "securityDescription": "Password changes and login security settings.",
+    "shortcutsTitle": "Shortcuts",
+    "shortcutsDescription": "The pages you are most likely to need right after sign-in.",
+    "signedInAs": "Signed in as",
+    "wishlistShortcutDescription": "Open your saved products.",
+    "cartShortcutDescription": "Jump back into checkout."
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "switchTo": "Switch to {theme} theme"
   }
 }

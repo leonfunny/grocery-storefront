@@ -10,6 +10,7 @@ import { useCartStore } from '@/stores/cart-store';
 import { cn, formatPrice, getImageSrc, isImageProxySrc } from '@/lib/utils';
 
 export function MiniCart() {
+  const tCommon = useTranslations('common');
   const tCart = useTranslations('cart');
   const tNav = useTranslations('nav');
   const items = useCartStore((state) => state.items);
@@ -42,7 +43,7 @@ export function MiniCart() {
       <Link
         href="/cart"
         className="flex items-center gap-2 rounded-xl px-3 py-2 hover-surface"
-        aria-label={`${tNav('cart')}${displayItemCount > 0 ? `, ${displayItemCount} items` : ''}`}
+        aria-label={`${tNav('cart')}${displayItemCount > 0 ? `, ${tCommon('itemCount', { count: displayItemCount })}` : ''}`}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
       >

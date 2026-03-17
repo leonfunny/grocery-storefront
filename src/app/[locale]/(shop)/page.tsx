@@ -51,6 +51,7 @@ function RecipeSkeleton() {
 export default function HomePage() {
   const t = useTranslations('home');
   const tNav = useTranslations('nav');
+  const tCommon = useTranslations('common');
   const channel = useChannel();
 
   const [productsResult] = useQuery({
@@ -127,7 +128,7 @@ export default function HomePage() {
               href={`/products?zone=${zone}`}
               className="flex flex-col items-center gap-3 p-6 md:p-8 rounded-xl border card-hover"
               style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
-              aria-label={`Shop ${zone.toLowerCase()} products`}
+              aria-label={t('shopZoneAria', { zone: t(zone.toLowerCase() as 'frozen' | 'chilled' | 'ambient') })}
             >
               <div
                 className="w-14 h-14 rounded-2xl flex items-center justify-center transition-transform duration-normal group-hover:scale-110"
@@ -183,9 +184,9 @@ export default function HomePage() {
             href="/products"
             className="text-sm font-medium flex items-center gap-1 transition-colors duration-fast hover:opacity-80"
             style={{ color: 'var(--color-primary)' }}
-            aria-label="View all products"
+            aria-label={tCommon('viewAllProducts')}
           >
-            {t('seeAllRecipes').replace('recipes', 'products')}
+            {t('seeAllProducts')}
             <ChevronRight className="w-4 h-4" aria-hidden="true" />
           </Link>
         </div>
@@ -204,7 +205,7 @@ export default function HomePage() {
         ) : (
           <div className="text-center py-16">
             <p className="text-sm" style={{ color: 'var(--color-muted-foreground)' }}>
-              No products available yet.
+              {t('productsEmpty')}
             </p>
           </div>
         )}
@@ -228,7 +229,7 @@ export default function HomePage() {
                 href="/recipes"
                 className="text-sm font-medium flex items-center gap-1 transition-colors duration-fast hover:opacity-80"
                 style={{ color: 'var(--color-primary)' }}
-                aria-label="View all recipes"
+                aria-label={tCommon('viewAllRecipes')}
               >
                 {t('seeAllRecipes')}
                 <ChevronRight className="w-4 h-4" aria-hidden="true" />

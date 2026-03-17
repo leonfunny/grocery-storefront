@@ -19,6 +19,7 @@ interface StorageZoneGroupProps {
 }
 
 export function StorageZoneGroup({ itemsByZone, renderItem }: StorageZoneGroupProps) {
+  const tCommon = useTranslations('common');
   const t = useTranslations('cart');
 
   const sortedZones = ZONE_ORDER.filter((z) => itemsByZone[z]?.length);
@@ -26,11 +27,12 @@ export function StorageZoneGroup({ itemsByZone, renderItem }: StorageZoneGroupPr
   if (sortedZones.length === 0) return null;
 
   return (
-    <div className="space-y-4" role="list" aria-label="Cart items grouped by storage zone">
+    <div className="space-y-4" role="list" aria-label={t('groupedByStorageZone')}>
       {sortedZones.map((zone) => {
         const config = ZONE_CONFIG[zone] || ZONE_CONFIG.OTHER;
         const Icon = config.icon;
         const items = itemsByZone[zone];
+        const itemCountLabel = tCommon('itemCount', { count: items.length });
 
         return (
           <section
@@ -38,9 +40,8 @@ export function StorageZoneGroup({ itemsByZone, renderItem }: StorageZoneGroupPr
             className="rounded-xl border overflow-hidden"
             style={{ borderColor: 'var(--color-border)' }}
             role="listitem"
-            aria-label={`${zone.toLowerCase()} storage — ${items.length} items`}
+            aria-label={t('zoneSectionAria', { zone: t(`zoneGroup.${zone}` as any), countLabel: itemCountLabel })}
           >
-            {/* Zone header */}
             <div
               className="flex items-center gap-2 px-4 py-2.5"
               style={{ backgroundColor: `color-mix(in srgb, ${config.colorVar} 10%, transparent)` }}
@@ -50,16 +51,14 @@ export function StorageZoneGroup({ itemsByZone, renderItem }: StorageZoneGroupPr
                 {t(`zoneGroup.${zone}` as any)}
               </span>
               <span className="text-xs ml-auto tabular-nums" style={{ color: 'var(--color-muted-foreground)' }}>
-                {items.length} {items.length === 1 ? 'item' : 'items'}
+                {itemCountLabel}
               </span>
             </div>
 
-            {/* Items */}
             <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
               {items.map(renderItem)}
             </div>
 
-            {/* Zone storage note */}
             <div className="px-4 py-2 text-xs" style={{ backgroundColor: 'var(--color-muted)', color: 'var(--color-muted-foreground)' }}>
               {t(`zoneNote.${zone}` as any)}
             </div>
