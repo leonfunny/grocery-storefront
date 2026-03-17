@@ -226,6 +226,21 @@ async function syncServerWishlist(nextGuestItems: WishlistItem[], set: WishlistS
     return true;
   }
 
+  // If the backend accepted the sync (success) but returned no items while we
+  // sent product IDs, the server didn't persist them yet.  Keep the local
+  // items so the UI isn't cleared and mark the server as available.
+  if (payload.items.length === 0 && productIds.length > 0) {
+    set({
+      items: nextGuestItems,
+      guestItems: nextGuestItems,
+      source: 'guest',
+      serverStatus: 'available',
+      initialized: true,
+      isLoading: false,
+    });
+    return true;
+  }
+
   try {
     const hydratedItems = await hydrateWishlistItems(payload.items, nextGuestItems);
     set({
@@ -285,6 +300,22 @@ export const useWishlistStore = create<WishlistState>()(
 
           if (serverItems == null) {
             setGuestWishlistState(set, get().guestItems, 'unavailable');
+            return;
+          }
+
+          // Server returned an empty wishlist but we have local items — keep
+          // the local items so they aren't cleared while the backend isn't
+          // persisting yet, and try to sync them up.
+          const currentGuestItems = get().guestItems;
+          if (serverItems.length === 0 && currentGuestItems.length > 0) {
+            set({
+              items: currentGuestItems,
+              guestItems: currentGuestItems,
+              source: 'guest',
+              serverStatus: 'available',
+              isLoading: false,
+              initialized: true,
+            });
             return;
           }
 
