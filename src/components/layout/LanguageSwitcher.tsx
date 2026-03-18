@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Globe } from 'lucide-react';
 import { locales } from '@/i18n/config';
 import { usePathname, useRouter } from '@/i18n/navigation';
+import { cn } from '@/lib/utils';
 
 const LOCALE_LABELS: Record<string, string> = {
   pl: 'PL',
@@ -17,7 +18,13 @@ const LOCALE_NAMES: Record<string, string> = {
   en: 'English',
 };
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  className?: string;
+  showLabel?: boolean;
+  buttonTestId?: string;
+}
+
+export function LanguageSwitcher({ className, showLabel = false, buttonTestId }: LanguageSwitcherProps) {
   const locale = useLocale();
   const tCommon = useTranslations('common');
   const router = useRouter();
@@ -49,14 +56,18 @@ export function LanguageSwitcher() {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors duration-150 hover-surface"
+        className={cn(
+          'flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors duration-150 hover-surface',
+          className
+        )}
         style={{ color: 'var(--color-foreground)' }}
         aria-label={tCommon('changeLanguage')}
         aria-expanded={open}
         aria-haspopup="listbox"
+        data-testid={buttonTestId}
       >
         <Globe className="w-4 h-4" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
-        <span className="hidden sm:inline">{LOCALE_LABELS[locale] || locale.toUpperCase()}</span>
+        <span className={showLabel ? '' : 'hidden sm:inline'}>{LOCALE_LABELS[locale] || locale.toUpperCase()}</span>
       </button>
 
       {open && (

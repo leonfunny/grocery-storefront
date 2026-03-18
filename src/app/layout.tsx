@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { getLocale } from 'next-intl/server';
 import Script from 'next/script';
 import { GraphQLProvider } from '@/lib/graphql/provider';
@@ -11,6 +11,12 @@ import './globals.css';
 export const metadata: Metadata = {
   title: process.env.NEXT_PUBLIC_STORE_NAME || 'Grocery Store',
   description: process.env.NEXT_PUBLIC_STORE_DESCRIPTION || 'Fresh groceries with full nutritional transparency',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

@@ -49,7 +49,7 @@ export function NutritionModal({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50 animate-fade-in" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md max-h-[85vh] overflow-y-auto rounded-xl border p-6 animate-slide-up" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+        <Dialog.Content className="fixed top-1/2 left-1/2 z-50 max-h-[85vh] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border p-5 animate-slide-up sm:w-full sm:p-6" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
           <div className="flex items-center justify-between mb-4">
             <Dialog.Title className="heading-section text-lg" style={{ color: 'var(--color-foreground)' }}>
               {productName}

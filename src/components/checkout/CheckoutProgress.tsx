@@ -23,10 +23,42 @@ export function CheckoutProgress({ currentStep, onStepClick, completedSteps }: C
   };
 
   const currentIndex = STEPS.indexOf(currentStep);
+  const progressPercent = ((currentIndex + 1) / STEPS.length) * 100;
 
   return (
-    <nav aria-label="Checkout progress" className="mb-8">
-      <ol className="flex items-center">
+    <nav aria-label="Checkout progress" className="mb-6 md:mb-8">
+      <div
+        className="sm:hidden rounded-2xl border px-4 py-3"
+        style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
+        data-testid="mobile-checkout-progress"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--color-muted-foreground)' }}>
+            {t('title')}
+          </p>
+          <p className="text-xs font-medium" style={{ color: 'var(--color-muted-foreground)' }}>
+            {currentIndex + 1} / {STEPS.length}
+          </p>
+        </div>
+
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold" style={{ color: 'var(--color-foreground)' }} data-testid="mobile-checkout-progress-current">
+            {stepLabels[currentStep]}
+          </p>
+          <p className="text-xs" style={{ color: 'var(--color-muted-foreground)' }}>
+            {Array.from(completedSteps).length} complete
+          </p>
+        </div>
+
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full" style={{ backgroundColor: 'var(--color-muted)' }}>
+          <div
+            className="h-full rounded-full transition-all duration-fast"
+            style={{ width: `${progressPercent}%`, backgroundColor: 'var(--color-primary)' }}
+          />
+        </div>
+      </div>
+
+      <ol className="hidden items-center sm:flex">
         {STEPS.map((step, index) => {
           const isCompleted = completedSteps.has(step);
           const isCurrent = step === currentStep;

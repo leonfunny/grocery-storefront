@@ -53,6 +53,8 @@
   /* Layout */
   --header-height: 64px;
   --radius: 0.75rem;
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 
   /* Animation timing tokens */
   --duration-fast: 100ms;
@@ -270,19 +272,9 @@ body {
     box-shadow var(--duration-normal) var(--ease-out);
 }
 
-.card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px -5px color-mix(in srgb, var(--color-foreground) 8%, transparent),
-    0 4px 10px -6px color-mix(in srgb, var(--color-foreground) 4%, transparent);
-}
-
 /* === Dark-mode-safe hover surface === */
 .hover-surface {
   transition: background-color var(--duration-fast) var(--ease-out);
-}
-
-.hover-surface:hover {
-  background-color: color-mix(in srgb, var(--color-foreground) 5%, transparent);
 }
 
 .cart-preview-scroll {
@@ -304,11 +296,23 @@ body {
   box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--color-primary) 55%, transparent);
 }
 
-.checkout-btn:hover {
-  background-color: #75c547 !important;
-  filter: brightness(1.1);
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+@media (hover: hover) and (pointer: fine) {
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px color-mix(in srgb, var(--color-foreground) 8%, transparent),
+      0 4px 10px -6px color-mix(in srgb, var(--color-foreground) 4%, transparent);
+  }
+
+  .hover-surface:hover {
+    background-color: color-mix(in srgb, var(--color-foreground) 5%, transparent);
+  }
+
+  .checkout-btn:hover {
+    background-color: #75c547 !important;
+    filter: brightness(1.1);
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  }
 }
 
 select,

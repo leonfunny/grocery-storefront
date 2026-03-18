@@ -26,7 +26,7 @@ export default function CartPage() {
   const subtotal = isHydrated && initialized ? getSubtotal() : 0;
   const currency = displayItems[0]?.currency ?? 'PLN';
   const itemsByZone = isHydrated && initialized ? getItemsByZone() : {};
-  const hasZones = Object.keys(itemsByZone).length > 1 || !itemsByZone['OTHER'];
+  const hasZones = Object.keys(itemsByZone).length > 1 || !itemsByZone.OTHER;
 
   async function handleSaveForLater(item: CartItem) {
     const success = await addWishlistItem({
@@ -51,83 +51,88 @@ export default function CartPage() {
 
   function renderCartItem(item: CartItem) {
     const imageUrl = getImageSrc(item.thumbnail);
+    const lineTotal = formatPrice(item.totalPrice ?? item.price * item.quantity, item.currency);
 
     return (
-      <div key={item.id} className="flex items-center gap-3 px-4 py-3" style={{ backgroundColor: 'var(--color-card)' }}>
-        {/* Thumbnail */}
-        <div className="shrink-0 w-14 h-14 rounded-lg overflow-hidden" style={{ backgroundColor: 'var(--color-muted)' }}>
-          {imageUrl ? (
-            <Image src={imageUrl} alt="" width={56} height={56} className="object-cover w-full h-full" unoptimized={isImageProxySrc(imageUrl)} />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <Package className="w-5 h-5 opacity-30" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
-            </div>
-          )}
-        </div>
+      <div key={item.id} className="px-4 py-3" style={{ backgroundColor: 'var(--color-card)' }} data-testid="cart-item">
+        <div className="flex items-start gap-3" data-testid="cart-item-info">
+          <div className="shrink-0 w-14 h-14 rounded-lg overflow-hidden" style={{ backgroundColor: 'var(--color-muted)' }}>
+            {imageUrl ? (
+              <Image src={imageUrl} alt="" width={56} height={56} className="object-cover w-full h-full" unoptimized={isImageProxySrc(imageUrl)} />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <Package className="w-5 h-5 opacity-30" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
+              </div>
+            )}
+          </div>
 
-        {/* Name + allergens */}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate" style={{ color: 'var(--color-foreground)' }}>
-            {item.name}
-          </p>
-          {item.allergens && item.allergens.length > 0 && (
-            <div className="flex gap-1 mt-0.5">
-              {item.allergens.slice(0, 2).map((a) => (
-                <span key={a} className="allergen-chip text-[10px]">{a}</span>
-              ))}
-            </div>
-          )}
-          <p className="text-sm tabular-nums mt-0.5" style={{ color: 'var(--color-muted-foreground)' }}>
-            {formatPrice(item.price, item.currency)}
-          </p>
-          <button
-            type="button"
-            onClick={() => void handleSaveForLater(item)}
-            className="inline-flex items-center gap-1.5 mt-1.5 text-xs font-medium transition-opacity duration-fast hover:opacity-80"
-            style={{ color: 'var(--color-primary)' }}
-          >
-            <Heart className="w-3.5 h-3.5" aria-hidden="true" />
-            {tWishlist('saveForLater')}
-          </button>
-        </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium" style={{ color: 'var(--color-foreground)' }}>
+              {item.name}
+            </p>
+            {item.allergens && item.allergens.length > 0 && (
+              <div className="mt-0.5 flex flex-wrap gap-1">
+                {item.allergens.slice(0, 2).map((allergen) => (
+                  <span key={allergen} className="allergen-chip text-[10px]">{allergen}</span>
+                ))}
+              </div>
+            )}
+            <p className="mt-0.5 text-sm tabular-nums" style={{ color: 'var(--color-muted-foreground)' }}>
+              {formatPrice(item.price, item.currency)}
+            </p>
+            <button
+              type="button"
+              onClick={() => void handleSaveForLater(item)}
+              className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-medium transition-opacity duration-fast hover:opacity-80"
+              style={{ color: 'var(--color-primary)' }}
+            >
+              <Heart className="w-3.5 h-3.5" aria-hidden="true" />
+              {tWishlist('saveForLater')}
+            </button>
+          </div>
 
-        {/* Quantity — 44px touch targets */}
-        <div className="flex items-center gap-0.5 border rounded-lg" style={{ borderColor: 'var(--color-border)' }}>
-          <button
-            type="button"
-            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-            className="w-11 h-11 flex items-center justify-center transition-colors duration-fast hover-surface"
-            aria-label={`Decrease ${item.name} quantity`}
-          >
-            <Minus className="w-4 h-4" style={{ color: 'var(--color-foreground)' }} aria-hidden="true" />
-          </button>
-          <span className="px-2 text-sm font-medium tabular-nums min-w-[40px] text-center" style={{ color: 'var(--color-foreground)' }} aria-live="polite">
-            {item.quantity}
+          <span className="text-sm font-bold tabular-nums text-right sm:hidden" style={{ color: 'var(--color-foreground)' }}>
+            {lineTotal}
           </span>
-          <button
-            type="button"
-            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-            className="w-11 h-11 flex items-center justify-center transition-colors duration-fast hover-surface"
-            aria-label={`Increase ${item.name} quantity`}
-          >
-            <Plus className="w-4 h-4" style={{ color: 'var(--color-foreground)' }} aria-hidden="true" />
-          </button>
         </div>
 
-        {/* Line total */}
-        <span className="text-sm font-bold tabular-nums w-20 text-right" style={{ color: 'var(--color-foreground)' }}>
-          {formatPrice(item.totalPrice ?? item.price * item.quantity, item.currency)}
-        </span>
+        <div className="mt-3 flex items-center justify-between gap-3" data-testid="cart-item-controls">
+          <div className="flex items-center gap-0.5 rounded-lg border" style={{ borderColor: 'var(--color-border)' }}>
+            <button
+              type="button"
+              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+              className="flex h-11 w-11 items-center justify-center transition-colors duration-fast hover-surface"
+              aria-label={`Decrease ${item.name} quantity`}
+            >
+              <Minus className="w-4 h-4" style={{ color: 'var(--color-foreground)' }} aria-hidden="true" />
+            </button>
+            <span className="min-w-[40px] px-2 text-center text-sm font-medium tabular-nums" style={{ color: 'var(--color-foreground)' }} aria-live="polite">
+              {item.quantity}
+            </span>
+            <button
+              type="button"
+              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+              className="flex h-11 w-11 items-center justify-center transition-colors duration-fast hover-surface"
+              aria-label={`Increase ${item.name} quantity`}
+            >
+              <Plus className="w-4 h-4" style={{ color: 'var(--color-foreground)' }} aria-hidden="true" />
+            </button>
+          </div>
 
-        {/* Remove — 44px touch target */}
-        <button
-          type="button"
-          onClick={() => removeItem(item.id)}
-          className="w-11 h-11 flex items-center justify-center rounded-lg transition-colors duration-fast hover-surface"
-          aria-label={`${t('remove')} ${item.name}`}
-        >
-          <Trash2 className="w-4 h-4" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
-        </button>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="hidden text-sm font-bold tabular-nums sm:block" style={{ color: 'var(--color-foreground)' }}>
+              {lineTotal}
+            </span>
+            <button
+              type="button"
+              onClick={() => removeItem(item.id)}
+              className="flex h-11 w-11 items-center justify-center rounded-lg transition-colors duration-fast hover-surface"
+              aria-label={`${t('remove')} ${item.name}`}
+            >
+              <Trash2 className="w-4 h-4" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -135,8 +140,8 @@ export default function CartPage() {
   if (!isHydrated || !initialized) {
     return (
       <div className="container-grocery py-16 text-center">
-        <ShoppingCart className="w-16 h-16 mx-auto mb-4 opacity-20" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
-        <h1 className="heading-display text-xl mb-2" style={{ color: 'var(--color-foreground)' }}>{tCommon('loading')}</h1>
+        <ShoppingCart className="mx-auto mb-4 h-16 w-16 opacity-20" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
+        <h1 className="heading-display mb-2 text-xl" style={{ color: 'var(--color-foreground)' }}>{tCommon('loading')}</h1>
       </div>
     );
   }
@@ -144,12 +149,12 @@ export default function CartPage() {
   if (displayItems.length === 0) {
     return (
       <div className="container-grocery py-16 text-center">
-        <ShoppingCart className="w-16 h-16 mx-auto mb-4 opacity-20" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
-        <h1 className="heading-display text-xl mb-2" style={{ color: 'var(--color-foreground)' }}>{t('empty')}</h1>
-        <p className="text-sm mb-8" style={{ color: 'var(--color-muted-foreground)' }}>{t('emptyDesc')}</p>
+        <ShoppingCart className="mx-auto mb-4 h-16 w-16 opacity-20" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
+        <h1 className="heading-display mb-2 text-xl" style={{ color: 'var(--color-foreground)' }}>{t('empty')}</h1>
+        <p className="mb-8 text-sm" style={{ color: 'var(--color-muted-foreground)' }}>{t('emptyDesc')}</p>
         <Link
           href="/products"
-          className="inline-flex items-center gap-2 px-8 py-3 rounded-xl font-semibold text-white transition-all duration-fast active:scale-95"
+          className="inline-flex items-center gap-2 rounded-xl px-8 py-3 font-semibold text-white transition-all duration-fast active:scale-95"
           style={{ backgroundColor: 'var(--color-primary)' }}
         >
           {t('shopNow')}
@@ -159,21 +164,20 @@ export default function CartPage() {
   }
 
   return (
-    <div className="container-grocery py-8 md:py-12">
-      <h1 className="heading-display text-2xl md:text-3xl mb-6" style={{ color: 'var(--color-foreground)' }}>
+    <div className="container-grocery py-8 pb-28 md:py-12 md:pb-12">
+      <h1 className="heading-display mb-6 text-2xl md:text-3xl" style={{ color: 'var(--color-foreground)' }}>
         {t('title')}
-        <span className="text-base font-normal ml-2 tabular-nums" style={{ color: 'var(--color-muted-foreground)' }}>
+        <span className="ml-2 text-base font-normal tabular-nums" style={{ color: 'var(--color-muted-foreground)' }}>
           ({isHydrated && initialized ? itemCount : 0})
         </span>
       </h1>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Cart items grouped by storage zone */}
+      <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
           {hasZones ? (
             <StorageZoneGroup itemsByZone={itemsByZone} renderItem={renderCartItem} />
           ) : (
-            <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
+            <div className="overflow-hidden rounded-xl border" style={{ borderColor: 'var(--color-border)' }}>
               <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
                 {displayItems.map(renderCartItem)}
               </div>
@@ -181,14 +185,13 @@ export default function CartPage() {
           )}
         </div>
 
-        {/* Summary */}
-        <div>
+        <div className="hidden lg:block">
           <div className="sticky top-20 rounded-xl border p-5" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
-            <h2 className="heading-section text-lg mb-4" style={{ color: 'var(--color-foreground)' }}>
+            <h2 className="heading-section mb-4 text-lg" style={{ color: 'var(--color-foreground)' }}>
               {t('title')}
             </h2>
 
-            <div className="space-y-2 mb-4">
+            <div className="mb-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span style={{ color: 'var(--color-muted-foreground)' }}>{t('subtotal')}</span>
                 <span className="font-medium tabular-nums" style={{ color: 'var(--color-foreground)' }}>
@@ -203,21 +206,20 @@ export default function CartPage() {
               </div>
             </div>
 
-            <div className="border-t pt-3 mb-5 flex justify-between" style={{ borderColor: 'var(--color-border)' }}>
+            <div className="mb-5 flex justify-between border-t pt-3" style={{ borderColor: 'var(--color-border)' }}>
               <span className="font-bold" style={{ color: 'var(--color-foreground)' }}>{t('total')}</span>
-              <span className="font-bold text-lg tabular-nums" style={{ color: 'var(--color-foreground)' }}>
+              <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--color-foreground)' }}>
                 {formatPrice(subtotal, currency)}
               </span>
             </div>
 
-            {/* Free shipping progress */}
             {(() => {
               const threshold = 150;
               const progress = Math.min(subtotal / threshold, 1);
               const remaining = Math.max(threshold - subtotal, 0);
               return (
                 <div className="mb-5">
-                  <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--color-muted)' }}>
+                  <div className="h-2 overflow-hidden rounded-full" style={{ backgroundColor: 'var(--color-muted)' }}>
                     <div
                       className="h-full rounded-full transition-all duration-normal"
                       style={{
@@ -226,7 +228,7 @@ export default function CartPage() {
                       }}
                     />
                   </div>
-                  <p className="text-xs mt-1.5 flex items-center gap-1" style={{ color: progress >= 1 ? 'var(--color-fresh)' : 'var(--color-muted-foreground)' }}>
+                  <p className="mt-1.5 flex items-center gap-1 text-xs" style={{ color: progress >= 1 ? 'var(--color-fresh)' : 'var(--color-muted-foreground)' }}>
                     <Truck className="w-3.5 h-3.5" aria-hidden="true" />
                     {progress >= 1
                       ? (t('freeShippingReached') || 'You qualify for free shipping!')
@@ -238,13 +240,43 @@ export default function CartPage() {
 
             <Link
               href="/checkout"
-              className="checkout-btn flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-white transition-all duration-fast active:scale-[0.98]"
+              className="checkout-btn flex w-full items-center justify-center gap-2 rounded-xl py-3 font-semibold text-white transition-all duration-fast active:scale-[0.98]"
               style={{ backgroundColor: 'var(--color-primary)' }}
             >
               {t('checkout')}
               <ArrowRight className="w-5 h-5" aria-hidden="true" />
             </Link>
           </div>
+        </div>
+      </div>
+
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur lg:hidden"
+        style={{
+          borderColor: 'var(--color-border)',
+          backgroundColor: 'color-mix(in srgb, var(--color-card) 96%, transparent)',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.75rem)',
+        }}
+        data-testid="mobile-cart-summary-bar"
+      >
+        <div className="container-grocery flex items-center justify-between gap-3 py-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--color-muted-foreground)' }}>
+              {t('total')}
+            </p>
+            <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--color-foreground)' }}>
+              {formatPrice(subtotal, currency)}
+            </p>
+          </div>
+
+          <Link
+            href="/checkout"
+            className="checkout-btn inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold text-white transition-all duration-fast active:scale-[0.98]"
+            style={{ backgroundColor: 'var(--color-primary)' }}
+          >
+            {t('checkout')}
+            <ArrowRight className="w-4 h-4" aria-hidden="true" />
+          </Link>
         </div>
       </div>
     </div>

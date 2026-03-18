@@ -124,6 +124,7 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
         className="group block rounded-xl border overflow-hidden card-hover"
         style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
         aria-label={`${product.name}, ${formatPrice(price, currency)}${!inStock ? `, ${t('product.outOfStock')}` : ''}`}
+        data-testid="product-card"
       >
         <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: 'var(--color-muted)' }}>
           {imageUrl ? (
@@ -241,8 +242,8 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
               )}
             </div>
 
-            <div className="grid grid-cols-[92px,minmax(0,1fr)] gap-2 mt-3 items-start">
-              <div className="group/quantity">
+            <div className="mt-3 flex flex-col gap-2 sm:grid sm:grid-cols-[92px,minmax(0,1fr)] sm:items-start">
+              <div className="group/quantity" data-testid="product-card-quantity">
                 <div
                   className="grid grid-cols-3 h-11 rounded-xl border overflow-hidden"
                   style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
@@ -285,19 +286,20 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
                 type="button"
                 onClick={handleAddToCart}
                 disabled={!inStock}
-                className="h-11 rounded-xl px-3 checkout-btn flex items-center justify-center gap-2 font-semibold transition-all duration-fast disabled:opacity-40 active:scale-[0.98]"
+                className="h-11 w-full rounded-xl px-3 checkout-btn flex items-center justify-center gap-2 font-semibold transition-all duration-fast disabled:opacity-40 active:scale-[0.98]"
                 style={{
                   backgroundColor: justAdded ? 'var(--color-fresh)' : inStock ? 'var(--color-primary)' : 'var(--color-muted)',
                   color: inStock ? 'white' : 'var(--color-muted-foreground)',
                 }}
                 aria-label={inStock ? t('product.addToCartWithQuantity', { quantity }) : t('product.outOfStock')}
+                data-testid="product-card-add"
               >
                 {justAdded ? (
                   <Check className="w-4 h-4" aria-hidden="true" />
                 ) : (
                   <ShoppingCart className="w-4 h-4" aria-hidden="true" />
                 )}
-                <span className="truncate text-xs sm:text-sm">{addToCartLabel}</span>
+                <span className="text-xs sm:text-sm">{addToCartLabel}</span>
               </button>
             </div>
           </div>

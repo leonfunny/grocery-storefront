@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ShoppingCart, Search, Menu, X, Leaf, Heart, LogIn, LogOut, UserRound, ChevronDown, Package, MapPin, Shield } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link, useRouter } from '@/i18n/navigation';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { useAuthStore } from '@/stores/auth-store';
 import { useCartStore } from '@/stores/cart-store';
 import { useWishlistStore } from '@/stores/wishlist-store';
@@ -18,6 +19,8 @@ export function Header() {
   const tAuth = useTranslations('auth');
   const tAccount = useTranslations('account');
   const tCommon = useTranslations('common');
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -28,15 +31,34 @@ export function Header() {
   const session = useAuthStore((s) => s.session);
   const logout = useAuthStore((s) => s.logout);
   const [isMounted, setIsMounted] = useState(false);
+  const isProductsRoute = pathname === '/products';
+  const activeProductsSearch = searchParams.get('search') || '';
 
   useEffect(() => setIsMounted(true), []);
+
+  useEffect(() => {
+    if (isProductsRoute) {
+      setSearchValue(activeProductsSearch);
+    }
+  }, [activeProductsSearch, isProductsRoute]);
 
   function handleSearch(query: string) {
     const q = query.trim();
     if (!q) return;
-    router.push(`/products?search=${encodeURIComponent(q)}`);
+    const nextUrl = `/products?search=${encodeURIComponent(q)}`;
+
+    if (isProductsRoute) {
+      router.replace(nextUrl, { scroll: false });
+    } else {
+      router.push(nextUrl);
+    }
+
     setSearchOpen(false);
-    setSearchValue('');
+    setSearchValue(q);
+  }
+
+  function handleMobileSearchAction() {
+    setSearchOpen((current) => !current);
   }
 
   const isAuthenticated = isMounted && session.status === 'authenticated';
@@ -112,7 +134,7 @@ export function Header() {
           <button
             type="button"
             className="md:hidden p-2.5 rounded-xl hover-surface"
-            onClick={() => setSearchOpen(!searchOpen)}
+            onClick={handleMobileSearchAction}
             aria-label={searchOpen ? tCommon('closeSearch') : tCommon('openSearch')}
             aria-expanded={searchOpen}
           >
@@ -123,12 +145,16 @@ export function Header() {
             )}
           </button>
 
-          <ThemeToggle />
-          <LanguageSwitcher />
+          <div className="hidden md:block" data-testid="mobile-header-theme">
+            <ThemeToggle />
+          </div>
+          <div className="hidden md:block" data-testid="mobile-header-language">
+            <LanguageSwitcher />
+          </div>
 
           <Link
             href="/wishlist"
-            className="relative p-2.5 rounded-xl hover-surface"
+            className="relative hidden md:inline-flex p-2.5 rounded-xl hover-surface"
             aria-label={`${t('wishlist')}${isMounted && wishlistCount > 0 ? `, ${tCommon('itemCount', { count: wishlistCount })}` : ''}`}
           >
             <Heart className="w-5 h-5" style={{ color: 'var(--color-foreground)' }} />
@@ -228,30 +254,12 @@ export function Header() {
               <span
                 className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
                 style={{ backgroundColor: 'var(--color-primary)' }}
+                data-testid="mobile-cart-count"
               >
                 {itemCount > 99 ? '99+' : itemCount}
               </span>
             )}
           </Link>
-
-          {isAuthenticated ? (
-            <button
-              type="button"
-              onClick={() => void handleLogout()}
-              className="md:hidden p-2.5 rounded-xl hover-surface"
-              aria-label={t('logout')}
-            >
-              <LogOut className="w-5 h-5" style={{ color: 'var(--color-foreground)' }} />
-            </button>
-          ) : (
-            <Link
-              href="/login"
-              className="md:hidden p-2.5 rounded-xl hover-surface"
-              aria-label={t('login')}
-            >
-              <LogIn className="w-5 h-5" style={{ color: 'var(--color-foreground)' }} />
-            </Link>
-          )}
 
           <button
             type="button"
@@ -295,6 +303,21 @@ export function Header() {
           style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
           aria-label="Mobile navigation"
         >
+          <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
+            <div className="grid grid-cols-2 gap-2">
+              <ThemeToggle
+                className="w-full justify-center rounded-xl border px-3 py-3 text-sm"
+                showLabel
+                buttonTestId="mobile-nav-theme"
+              />
+              <LanguageSwitcher
+                className="w-full justify-center rounded-xl border px-3 py-3 text-sm"
+                showLabel
+                buttonTestId="mobile-nav-language"
+              />
+            </div>
+          </div>
+
           {isAuthenticated ? (
             <>
               <div
@@ -311,6 +334,15 @@ export function Header() {
                 onClick={() => setMenuOpen(false)}
               >
                 {tAccount('menuAccount')}
+              </Link>
+              <Link
+                href="/wishlist"
+                className="block px-4 py-3.5 text-sm font-medium border-b hover-surface"
+                style={{ borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}
+                onClick={() => setMenuOpen(false)}
+              >
+                {t('wishlist')}
+                {isMounted && wishlistCount > 0 ? ` (${wishlistCount})` : ''}
               </Link>
               <button
                 type="button"
@@ -340,13 +372,21 @@ export function Header() {
               >
                 {t('register')}
               </Link>
+              <Link
+                href="/wishlist"
+                className="block px-4 py-3.5 text-sm font-medium border-b hover-surface"
+                style={{ borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}
+                onClick={() => setMenuOpen(false)}
+              >
+                {t('wishlist')}
+                {isMounted && wishlistCount > 0 ? ` (${wishlistCount})` : ''}
+              </Link>
             </>
           )}
           {[
             { href: '/', label: t('home') },
             { href: '/products', label: t('products') },
             { href: '/recipes', label: t('recipes') },
-            { href: '/wishlist', label: `${t('wishlist')}${isMounted && wishlistCount > 0 ? ` (${wishlistCount})` : ''}` },
             { href: '/cart', label: `${t('cart')}${isMounted && cartInitialized && itemCount > 0 ? ` (${itemCount})` : ''}` },
           ].map(({ href, label }) => (
             <Link

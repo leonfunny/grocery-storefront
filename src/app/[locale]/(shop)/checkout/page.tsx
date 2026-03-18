@@ -292,6 +292,7 @@ export default function CheckoutPage() {
   const [serverTotal, setServerTotal] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
+  const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
   const uiText = useMemo(
     () => ({
       paymentReturned:
@@ -430,6 +431,12 @@ export default function CheckoutPage() {
     window.sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(draft));
   }, [checkoutId, completedSteps, form, isHydrated, promoCode, step]);
 
+  useEffect(() => {
+    if (step === 'review') {
+      setMobileSummaryOpen(true);
+    }
+  }, [step]);
+
   const displaySubtotal = cost.subtotalAmount?.amount ?? getSubtotal();
   const displayCurrency =
     cost.totalAmount?.currency
@@ -441,6 +448,106 @@ export default function CheckoutPage() {
   const appliedDiscount = useMemo(
     () => discountCodes.find((entry) => entry.applicable),
     [discountCodes]
+  );
+  const summaryContent = (
+    <>
+      <ul className="space-y-3 mb-5" role="list">
+        {items.map((item) => (
+          <li key={item.id} className="flex items-start justify-between gap-3 text-sm" role="listitem">
+            <span style={{ color: 'var(--color-foreground)' }}>
+              {item.name} x {item.quantity}
+            </span>
+            <span className="tabular-nums font-medium" style={{ color: 'var(--color-foreground)' }}>
+              {formatPrice(item.totalPrice ?? item.price * item.quantity, item.currency)}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="border-t pt-4 space-y-2" style={{ borderColor: 'var(--color-border)' }}>
+        <div className="flex justify-between text-sm">
+          <span style={{ color: 'var(--color-muted-foreground)' }}>{tCart('subtotal')}</span>
+          <span className="font-medium tabular-nums" style={{ color: 'var(--color-foreground)' }}>
+            {formatPrice(displaySubtotal, displayCurrency)}
+          </span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span style={{ color: 'var(--color-muted-foreground)' }}>{tCart('shipping')}</span>
+          <span className="font-medium tabular-nums" style={{ color: 'var(--color-foreground)' }}>
+            {selectedDeliveryOption
+              ? selectedDeliveryOption.price.amount === 0
+                ? t('freeShipping')
+                : formatPrice(shippingCost, selectedDeliveryOption.price.currency)
+              : uiText.calculatedNext}
+          </span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span style={{ color: 'var(--color-muted-foreground)' }}>{uiText.discountLabel}</span>
+          <span className="font-medium" style={{ color: appliedDiscount ? 'var(--color-fresh)' : 'var(--color-muted-foreground)' }}>
+            {appliedDiscount ? appliedDiscount.code : uiText.noneLabel}
+          </span>
+        </div>
+        <div className="flex justify-between pt-2 font-bold">
+          <span style={{ color: 'var(--color-foreground)' }}>{tCart('total')}</span>
+          <span className="text-lg tabular-nums" style={{ color: 'var(--color-foreground)' }}>
+            {formatPrice(displayTotal, displayCurrency)}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-5">
+        {discountCodes.length > 0 ? (
+          <div className="flex items-center gap-2 rounded-xl border px-3 py-3 text-sm" style={{ borderColor: 'var(--color-border)' }}>
+            <Tag className="h-4 w-4 shrink-0" style={{ color: 'var(--color-fresh)' }} aria-hidden="true" />
+            <span className="flex-1 font-medium" style={{ color: 'var(--color-foreground)' }}>
+              {discountCodes.map((entry) => entry.code).join(', ')}
+            </span>
+            <button
+              type="button"
+              onClick={() => void handlePromoRemove()}
+              disabled={busy}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full"
+              aria-label="Remove promo code"
+            >
+              <X className="h-4 w-4" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={promoCode}
+              onChange={(event) => setPromoCode(event.target.value)}
+              placeholder={t('promoPlaceholder')}
+              className={INPUT_CLASS}
+              style={{ borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}
+            />
+            <button
+              type="button"
+              onClick={() => void handlePromoApply()}
+              disabled={busy || !promoCode.trim()}
+              className="rounded-xl border px-4 py-2 text-sm font-medium disabled:opacity-50"
+              style={{ borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}
+            >
+              {t('applyPromo')}
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="border-t pt-4 mt-5 space-y-2.5" style={{ borderColor: 'var(--color-border)' }}>
+        {[
+          { icon: ShieldCheck, label: t('trustSecure') },
+          { icon: Truck, label: t('trustFast') },
+          { icon: RefreshCw, label: t('trustReturns') },
+        ].map(({ icon: Icon, label }) => (
+          <div key={label} className="flex items-center gap-2 text-[11px]" style={{ color: 'var(--color-muted-foreground)' }}>
+            <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>{label}</span>
+          </div>
+        ))}
+      </div>
+    </>
   );
 
   function setFieldValue<K extends keyof DeliveryFormState>(key: K, value: DeliveryFormState[K]) {
@@ -855,7 +962,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="container-grocery py-8 md:py-12">
+    <div className="container-grocery py-8 pb-36 md:py-12 md:pb-12">
       <Link
         href="/cart"
         className="inline-flex items-center gap-1.5 text-sm mb-6 transition-opacity duration-fast hover:opacity-80"
@@ -887,7 +994,7 @@ export default function CheckoutPage() {
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
           {step === 'delivery' && (
-            <section className="rounded-2xl border p-5 md:p-6" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
+            <section className="rounded-2xl border p-4 sm:p-5 md:p-6" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
               <h2 className="heading-section text-lg mb-5" style={{ color: 'var(--color-foreground)' }}>
                 {t('delivery')}
               </h2>
@@ -953,7 +1060,7 @@ export default function CheckoutPage() {
                   type="button"
                   onClick={() => void handleDeliveryContinue()}
                   disabled={busy}
-                  className="inline-flex items-center gap-2 rounded-xl px-6 py-3 font-semibold text-white transition-all duration-fast disabled:opacity-60"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 font-semibold text-white transition-all duration-fast disabled:opacity-60 sm:w-auto"
                   style={{ backgroundColor: 'var(--color-primary)' }}
                 >
                   {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
@@ -965,7 +1072,7 @@ export default function CheckoutPage() {
           )}
 
           {step === 'shipping' && (
-            <section className="rounded-2xl border p-5 md:p-6" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
+            <section className="rounded-2xl border p-4 sm:p-5 md:p-6" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
               <h2 className="heading-section text-lg mb-2" style={{ color: 'var(--color-foreground)' }}>
                 {t('shippingTitle')}
               </h2>
@@ -1019,7 +1126,7 @@ export default function CheckoutPage() {
           )}
 
           {step === 'payment' && (
-            <section className="rounded-2xl border p-5 md:p-6" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
+            <section className="rounded-2xl border p-4 sm:p-5 md:p-6" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
               <div className="flex items-center justify-between gap-3 mb-4">
                 <div>
                   <h2 className="heading-section text-lg" style={{ color: 'var(--color-foreground)' }}>
@@ -1098,7 +1205,7 @@ export default function CheckoutPage() {
 
           {step === 'review' && (
             <section className="space-y-6">
-              <div className="rounded-2xl border p-5 md:p-6" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
+              <div className="rounded-2xl border p-4 sm:p-5 md:p-6" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
                 <h2 className="heading-section text-lg mb-4" style={{ color: 'var(--color-foreground)' }}>
                   {t('reviewTitle')}
                 </h2>
@@ -1166,7 +1273,7 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div className="flex justify-between">
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
                 <button
                   type="button"
                   onClick={() => setStep('payment')}
@@ -1180,7 +1287,7 @@ export default function CheckoutPage() {
                   type="button"
                   onClick={() => void handlePlaceOrder()}
                   disabled={busy || !checkoutId}
-                  className="inline-flex items-center gap-2 rounded-xl px-6 py-3 font-semibold text-white transition-all duration-fast disabled:opacity-60"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 font-semibold text-white transition-all duration-fast disabled:opacity-60 sm:w-auto"
                   style={{ backgroundColor: 'var(--color-primary)' }}
                 >
                   {busy ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <ShieldCheck className="h-5 w-5" aria-hidden="true" />}
@@ -1191,108 +1298,73 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        <div>
+        <div className="hidden lg:block">
           <div className="sticky top-20 rounded-2xl border p-5" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
             <h2 className="heading-section text-lg mb-4" style={{ color: 'var(--color-foreground)' }}>
               {t('summary')}
             </h2>
+            {summaryContent}
+          </div>
+        </div>
+      </div>
 
-            <ul className="space-y-3 mb-5" role="list">
-              {items.map((item) => (
-                <li key={item.id} className="flex items-start justify-between gap-3 text-sm" role="listitem">
-                  <span style={{ color: 'var(--color-foreground)' }}>
-                    {item.name} x {item.quantity}
-                  </span>
-                  <span className="tabular-nums font-medium" style={{ color: 'var(--color-foreground)' }}>
-                    {formatPrice(item.totalPrice ?? item.price * item.quantity, item.currency)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="border-t pt-4 space-y-2" style={{ borderColor: 'var(--color-border)' }}>
-              <div className="flex justify-between text-sm">
-                <span style={{ color: 'var(--color-muted-foreground)' }}>{tCart('subtotal')}</span>
-                <span className="font-medium tabular-nums" style={{ color: 'var(--color-foreground)' }}>
-                  {formatPrice(displaySubtotal, displayCurrency)}
-                </span>
+      <div className="fixed inset-x-0 bottom-0 z-40 lg:hidden">
+        {mobileSummaryOpen && (
+          <div className="container-grocery mb-3">
+            <div
+              className="rounded-2xl border p-4 shadow-2xl"
+              style={{
+                borderColor: 'var(--color-border)',
+                backgroundColor: 'color-mix(in srgb, var(--color-card) 98%, transparent)',
+              }}
+              data-testid="mobile-checkout-summary-panel"
+            >
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h2 className="heading-section text-base" style={{ color: 'var(--color-foreground)' }}>
+                  {t('summary')}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setMobileSummaryOpen(false)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium hover-surface"
+                  style={{ borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                  {tCommon('close')}
+                </button>
               </div>
-              <div className="flex justify-between text-sm">
-                <span style={{ color: 'var(--color-muted-foreground)' }}>{tCart('shipping')}</span>
-                <span className="font-medium tabular-nums" style={{ color: 'var(--color-foreground)' }}>
-                  {selectedDeliveryOption
-                    ? selectedDeliveryOption.price.amount === 0
-                      ? t('freeShipping')
-                      : formatPrice(shippingCost, selectedDeliveryOption.price.currency)
-                    : uiText.calculatedNext}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span style={{ color: 'var(--color-muted-foreground)' }}>{uiText.discountLabel}</span>
-                <span className="font-medium" style={{ color: appliedDiscount ? 'var(--color-fresh)' : 'var(--color-muted-foreground)' }}>
-                  {appliedDiscount ? appliedDiscount.code : uiText.noneLabel}
-                </span>
-              </div>
-              <div className="flex justify-between pt-2 font-bold">
-                <span style={{ color: 'var(--color-foreground)' }}>{tCart('total')}</span>
-                <span className="text-lg tabular-nums" style={{ color: 'var(--color-foreground)' }}>
-                  {formatPrice(displayTotal, displayCurrency)}
-                </span>
-              </div>
+              {summaryContent}
             </div>
+          </div>
+        )}
 
-            <div className="mt-5">
-              {discountCodes.length > 0 ? (
-                <div className="flex items-center gap-2 rounded-xl border px-3 py-3 text-sm" style={{ borderColor: 'var(--color-border)' }}>
-                  <Tag className="h-4 w-4 shrink-0" style={{ color: 'var(--color-fresh)' }} aria-hidden="true" />
-                  <span className="flex-1 font-medium" style={{ color: 'var(--color-foreground)' }}>
-                    {discountCodes.map((entry) => entry.code).join(', ')}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => void handlePromoRemove()}
-                    disabled={busy}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full"
-                    aria-label="Remove promo code"
-                  >
-                    <X className="h-4 w-4" style={{ color: 'var(--color-muted-foreground)' }} aria-hidden="true" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={promoCode}
-                    onChange={(event) => setPromoCode(event.target.value)}
-                    placeholder={t('promoPlaceholder')}
-                    className={INPUT_CLASS}
-                    style={{ borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => void handlePromoApply()}
-                    disabled={busy || !promoCode.trim()}
-                    className="rounded-xl border px-4 py-2 text-sm font-medium disabled:opacity-50"
-                    style={{ borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}
-                  >
-                    {t('applyPromo')}
-                  </button>
-                </div>
-              )}
+        <div
+          className="border-t backdrop-blur"
+          style={{
+            borderColor: 'var(--color-border)',
+            backgroundColor: 'color-mix(in srgb, var(--color-card) 96%, transparent)',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.75rem)',
+          }}
+          data-testid="mobile-checkout-summary-bar"
+        >
+          <div className="container-grocery flex items-center justify-between gap-3 py-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--color-muted-foreground)' }}>
+                {t('summary')}
+              </p>
+              <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--color-foreground)' }}>
+                {formatPrice(displayTotal, displayCurrency)}
+              </p>
             </div>
-
-            <div className="border-t pt-4 mt-5 space-y-2.5" style={{ borderColor: 'var(--color-border)' }}>
-              {[
-                { icon: ShieldCheck, label: t('trustSecure') },
-                { icon: Truck, label: t('trustFast') },
-                { icon: RefreshCw, label: t('trustReturns') },
-              ].map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center gap-2 text-[11px]" style={{ color: 'var(--color-muted-foreground)' }}>
-                  <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                  <span>{label}</span>
-                </div>
-              ))}
-            </div>
+            <button
+              type="button"
+              onClick={() => setMobileSummaryOpen((current) => !current)}
+              className="inline-flex items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold hover-surface"
+              style={{ borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}
+              aria-expanded={mobileSummaryOpen}
+            >
+              {mobileSummaryOpen ? tCommon('close') : t('summary')}
+            </button>
           </div>
         </div>
       </div>

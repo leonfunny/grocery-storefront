@@ -10,3 +10,5 @@ node_modules/
 
 # Runtime output
 dev-server.log
+playwright-report/
+test-results/

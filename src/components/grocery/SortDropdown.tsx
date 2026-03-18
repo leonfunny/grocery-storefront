@@ -1,5 +1,6 @@
 'use client';
 
+import { useId } from 'react';
 import { useTranslations } from 'next-intl';
 
 export interface SortOption {
@@ -23,14 +24,15 @@ interface SortDropdownProps {
 
 export function SortDropdown({ value, onChange }: SortDropdownProps) {
   const t = useTranslations('products');
+  const selectId = useId();
 
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor="sort-select" className="text-xs font-medium whitespace-nowrap" style={{ color: 'var(--color-foreground)' }}>
+      <label htmlFor={selectId} className="text-xs font-medium whitespace-nowrap" style={{ color: 'var(--color-foreground)' }}>
         {t('sortBy')}
       </label>
       <select
-        id="sort-select"
+        id={selectId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="rounded-xl border px-3 py-2.5 text-sm bg-transparent transition-colors duration-fast focus:outline-none focus-visible:ring-2 cursor-pointer"
