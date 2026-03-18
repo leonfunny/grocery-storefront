@@ -1,6 +1,6 @@
 /** GraphQL operations for the grocery storefront */
 
-export const GROCERY_PRODUCT_FIELDS = `
+const GROCERY_PRODUCT_FIELDS = `
   fragment GroceryProductFields on Product {
     id
     name
@@ -112,20 +112,7 @@ export const PRODUCT_BY_SLUG_QUERY = `
   }
 `;
 
-export const PRODUCTS_BY_ZONE_QUERY = `
-  ${GROCERY_PRODUCT_FIELDS}
-  query ProductsByZone($channel: String!, $zone: StorageZone!, $first: Int) {
-    productsByStorageZone(channel: $channel, zone: $zone, first: $first) {
-      edges {
-        node { ...GroceryProductFields }
-        cursor
-      }
-      pageInfo { hasNextPage endCursor }
-    }
-  }
-`;
-
-export const RECIPE_FIELDS = `
+const RECIPE_FIELDS = `
   fragment RecipeFields on Recipe {
     id
     name
@@ -334,7 +321,7 @@ export const WISHLIST_PRODUCT_FIELDS = `
 
 // --- OMS cart ---
 
-export const CART_FIELDS = `
+const CART_FIELDS = `
   fragment CartFields on Cart {
     id
     lines {
@@ -470,17 +457,6 @@ export const CART_NOTE_UPDATE_MUTATION = `
     cartNoteUpdate(cartId: $cartId, note: $note) {
       cart { ...CartFields }
       userErrors { field message code }
-    }
-  }
-`;
-
-export const CART_ESTIMATED_COST_QUERY = `
-  query CartEstimatedCost($cartId: ID!) {
-    cartEstimatedCost(cartId: $cartId) {
-      subtotalAmount { amount currency }
-      totalAmount { amount currency }
-      totalTaxAmount { amount currency }
-      totalDutyAmount { amount currency }
     }
   }
 `;

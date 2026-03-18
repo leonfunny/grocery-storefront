@@ -2,7 +2,7 @@
 
 import { getAuthToken } from '@/lib/auth';
 
-export interface GraphQLErrorPayload {
+interface GraphQLErrorPayload {
   message: string;
   path?: string[];
   extensions?: {
@@ -15,7 +15,7 @@ export interface GraphQLErrorPayload {
   };
 }
 
-export interface GraphQLResponse<T> {
+interface GraphQLResponse<T> {
   data: T | null;
   errors: GraphQLErrorPayload[];
   status: number;

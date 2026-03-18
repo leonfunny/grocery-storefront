@@ -19,7 +19,7 @@ export interface SearchableProduct {
   } | null;
 }
 
-export interface RankedSearchProduct extends SearchableProduct {
+interface RankedSearchProduct extends SearchableProduct {
   score: number;
 }
 

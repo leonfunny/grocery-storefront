@@ -12,3 +12,5 @@ node_modules/
 dev-server.log
 playwright-report/
 test-results/
+docs/
+scripts/

@@ -3,8 +3,8 @@
 import Cookies from 'js-cookie';
 import type { CustomerProfile } from '@/types';
 
-export const AUTH_TOKEN_COOKIE = 'grocery_token';
-export const REFRESH_TOKEN_COOKIE = 'grocery_refresh_token';
+const AUTH_TOKEN_COOKIE = 'grocery_token';
+const REFRESH_TOKEN_COOKIE = 'grocery_refresh_token';
 const AUTH_TOKEN_STORAGE_KEY = 'grocery_auth_token';
 const REFRESH_TOKEN_STORAGE_KEY = 'grocery_refresh_token';
 const AUTH_SESSION_STORAGE_KEY = 'grocery_auth_session';

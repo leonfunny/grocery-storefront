@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useQuery } from 'urql';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, ShoppingCart, Info, Package, Check, Minus, Plus, Truck } from 'lucide-react';
+import { ShoppingCart, Info, Package, Check, Minus, Plus, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 import { PRODUCT_BY_SLUG_QUERY, PRODUCT_RECIPES_QUERY } from '@/lib/graphql/operations/grocery';
 import { FreshnessBadge } from '@/components/grocery/FreshnessBadge';

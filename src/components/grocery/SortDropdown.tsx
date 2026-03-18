@@ -3,7 +3,7 @@
 import { useId } from 'react';
 import { useTranslations } from 'next-intl';
 
-export interface SortOption {
+interface SortOption {
   value: string;
   label: string;
   field: string;
