@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useQuery } from 'urql';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Info, Package, Check, Minus, Plus, Truck } from 'lucide-react';
+import { ShoppingCart, Info, Package, Check, Minus, Plus, Truck, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { PRODUCT_BY_SLUG_QUERY, PRODUCT_RECIPES_QUERY } from '@/lib/graphql/operations/grocery';
 import { FreshnessBadge } from '@/components/grocery/FreshnessBadge';
@@ -14,6 +14,7 @@ import { NutritionModal } from '@/components/grocery/NutritionModal';
 import { RecipeCard } from '@/components/grocery/RecipeCard';
 import { Breadcrumb } from '@/components/grocery/Breadcrumb';
 import { useCartStore } from '@/stores/cart-store';
+import { useWishlistStore } from '@/stores/wishlist-store';
 import { formatPrice, getImageSrc, isImageProxySrc } from '@/lib/utils';
 import { useChannel } from '@/hooks/use-channel';
 
@@ -38,6 +39,9 @@ export default function ProductDetailPage() {
   const { id: slug } = useParams<{ id: string }>();
   const t = useTranslations();
   const addItem = useCartStore((s) => s.addItem);
+  const wishlistItems = useWishlistStore((state) => state.items);
+  const addWishlistItem = useWishlistStore((state) => state.addItem);
+  const removeWishlistItem = useWishlistStore((state) => state.removeItem);
   const [nutritionOpen, setNutritionOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
@@ -79,6 +83,7 @@ export default function ProductDetailPage() {
   const currency = variant?.pricing?.price?.gross?.currency ?? 'PLN';
   const inStock = (variant?.quantityAvailable ?? 0) > 0;
   const imageUrl = getImageSrc(product?.thumbnail?.url);
+  const isWishlisted = wishlistItems.some((item) => item.productId === product.id);
 
   function handleAddToCart() {
     if (!variant || !inStock) return;
@@ -104,6 +109,40 @@ export default function ProductDetailPage() {
       setJustAdded(true);
       setTimeout(() => setJustAdded(false), 1200);
       toast.success(t('product.addToCartSuccess'));
+    })();
+  }
+
+  function handleWishlistToggle() {
+    if (!variant) return;
+
+    void (async () => {
+      if (isWishlisted) {
+        const success = await removeWishlistItem(product.id);
+        if (success) {
+          toast.success(t('wishlist.removeSuccess'));
+        } else {
+          toast.error(t('common.error'));
+        }
+        return;
+      }
+
+      const success = await addWishlistItem({
+        productId: product.id,
+        variantId: variant.id,
+        slug: product.slug,
+        name: product.name,
+        thumbnail: imageUrl || undefined,
+        price,
+        currency,
+        quantity,
+        storageZone: product.storageZone,
+      });
+
+      if (success) {
+        toast.success(t('wishlist.addSuccess'));
+      } else {
+        toast.error(t('common.error'));
+      }
     })();
   }
 
@@ -213,7 +252,7 @@ export default function ProductDetailPage() {
           )}
 
           {/* Add to cart */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3" data-testid="product-detail-actions">
             <div className="flex items-center border rounded-lg" style={{ borderColor: 'var(--color-border)' }}>
               <button
                 type="button"
@@ -239,18 +278,33 @@ export default function ProductDetailPage() {
             </div>
             <button
               type="button"
+              onClick={handleWishlistToggle}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-all duration-fast hover:scale-[1.02] active:scale-[0.98] sm:h-10 sm:w-10"
+              style={{
+                borderColor: isWishlisted ? 'var(--color-primary)' : 'var(--color-border)',
+                backgroundColor: 'var(--color-card)',
+                color: isWishlisted ? 'var(--color-primary)' : 'var(--color-foreground)',
+              }}
+              aria-label={isWishlisted ? t('wishlist.remove') : t('wishlist.add')}
+              data-testid="product-detail-wishlist"
+            >
+              <Heart className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isWishlisted ? 'fill-current' : ''}`} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
               onClick={handleAddToCart}
               disabled={!inStock}
-              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white transition-all duration-fast disabled:opacity-50 active:scale-[0.98] hover:brightness-90 hover:shadow-md"
+              className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-white transition-all duration-fast disabled:opacity-50 active:scale-[0.98] hover:brightness-90 hover:shadow-md sm:h-10 sm:gap-2 sm:px-4 sm:text-base"
               style={{
                 backgroundColor: justAdded ? 'var(--color-fresh)' : 'var(--color-primary)',
               }}
+              data-testid="product-detail-add"
               aria-label={inStock ? `${t('common.addToCart')} — ${product.name}` : t('product.outOfStock')}
             >
               {justAdded ? (
-                <Check className="w-5 h-5" aria-hidden="true" />
+                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
               ) : (
-                <ShoppingCart className="w-5 h-5" aria-hidden="true" />
+                <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
               )}
               {inStock ? t('common.addToCart') : t('product.outOfStock')}
             </button>

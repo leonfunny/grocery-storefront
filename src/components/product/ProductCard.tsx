@@ -36,6 +36,13 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
   const maxQuantity = Math.max(1, variant?.quantityAvailable ?? (product as any)?.quantityAvailable ?? 99);
   const quantityUnitLabel = t('product.quantityUnitShort');
   const addToCartLabel = t('common.addToCart');
+  const storageZoneSymbol = product.storageZone
+    ? product.storageZone === 'FROZEN'
+      ? '\u2744'
+      : product.storageZone === 'CHILLED'
+        ? '\u2603'
+        : '\u2600'
+    : null;
 
   function updateQuantity(e: React.MouseEvent, delta: number) {
     e.preventDefault();
@@ -121,8 +128,8 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
     <>
       <Link
         href={`/products/${product.slug}`}
-        className="group block rounded-xl border overflow-hidden card-hover"
-        style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
+        className="group block overflow-hidden rounded-none border-0 card-hover sm:rounded-xl sm:border"
+        style={{ borderColor: 'var(--color-border)' }}
         aria-label={`${product.name}, ${formatPrice(price, currency)}${!inStock ? `, ${t('product.outOfStock')}` : ''}`}
         data-testid="product-card"
       >
@@ -133,7 +140,7 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
               alt=""
               fill
               priority={imagePriority}
-              className="object-cover group-hover:scale-105 transition-transform duration-slow"
+              className="object-cover scale-[1.06] transition-transform duration-slow sm:scale-100 sm:group-hover:scale-105"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               unoptimized={isImageProxySrc(imageUrl)}
             />
@@ -144,12 +151,49 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
           )}
 
           {product.freshness && (
-            <div className="absolute top-2.5 left-2.5">
+            <div className="absolute top-2.5 left-2.5 hidden sm:block">
               <FreshnessBadge freshness={product.freshness} nearestExpiry={product.nearestExpiry} compact />
             </div>
           )}
 
-          <div className="absolute top-2.5 right-2.5 flex flex-col items-end gap-2">
+          <div className="absolute inset-x-0 top-2.5 z-10 flex items-start justify-between px-2.5 sm:hidden">
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={!inStock}
+              className="flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-fast disabled:opacity-40 active:scale-[0.98]"
+              style={{
+                backgroundColor: justAdded ? 'var(--color-fresh)' : inStock ? 'color-mix(in srgb, var(--color-primary) 92%, transparent)' : 'var(--color-muted)',
+                borderColor: justAdded ? 'var(--color-fresh)' : inStock ? 'var(--color-primary)' : 'var(--color-border)',
+                color: inStock ? 'white' : 'var(--color-muted-foreground)',
+              }}
+              aria-label={inStock ? t('product.addToCartWithQuantity', { quantity }) : t('product.outOfStock')}
+              data-testid="product-card-add"
+            >
+              {justAdded ? (
+                <Check className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <ShoppingCart className="h-4 w-4" aria-hidden="true" />
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleWishlistToggle}
+              className="flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-fast active:scale-[0.98]"
+              style={{
+                backgroundColor: 'color-mix(in srgb, var(--color-card) 90%, transparent)',
+                borderColor: isWishlisted ? 'var(--color-primary)' : 'var(--color-border)',
+                color: isWishlisted ? 'var(--color-primary)' : 'var(--color-foreground)',
+              }}
+              aria-label={isWishlisted ? t('wishlist.remove') : t('wishlist.add')}
+              data-testid="product-card-wishlist"
+            >
+              <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-current' : ''}`} aria-hidden="true" />
+            </button>
+          </div>
+
+          <div className="absolute top-2.5 right-2.5 hidden flex-col items-end gap-2 sm:flex">
             <button
               type="button"
               onClick={handleWishlistToggle}
@@ -169,7 +213,7 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
                 className={`px-2 py-0.5 rounded-md text-[10px] font-bold text-white zone-${product.storageZone.toLowerCase()}`}
                 aria-label={t('product.storageAria', { zone: t(`cart.zoneGroup.${product.storageZone}` as any) })}
               >
-                {product.storageZone === 'FROZEN' ? '\u2744' : product.storageZone === 'CHILLED' ? '\u2603' : '\u2600'}
+                {storageZoneSymbol}
               </span>
             )}
           </div>
@@ -178,7 +222,7 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
             <button
               type="button"
               onClick={handleNutritionClick}
-              className="absolute bottom-2.5 right-2.5 w-11 h-11 rounded-full flex items-center justify-center border transition-all duration-fast hover:scale-110"
+              className="absolute bottom-2.5 right-2.5 hidden h-11 w-11 items-center justify-center rounded-full border transition-all duration-fast hover:scale-110 sm:flex"
               style={{ backgroundColor: 'color-mix(in srgb, var(--color-card) 90%, transparent)', borderColor: 'var(--color-border)' }}
               aria-label={`${t('product.nutrition')} - ${product.name}`}
             >
@@ -195,7 +239,40 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
           )}
         </div>
 
-        <div className="p-3.5">
+        <div className="p-3.5 sm:bg-[var(--color-card)]">
+          {(product.freshness || product.storageZone || product.nutritionFacts) && (
+            <div className="mb-2 flex items-start justify-between gap-2 sm:hidden">
+              <div className="flex min-w-0 flex-wrap items-center gap-1">
+                {product.freshness && (
+                  <FreshnessBadge freshness={product.freshness} nearestExpiry={product.nearestExpiry} compact />
+                )}
+                {product.storageZone && (
+                  <span
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold text-white zone-${product.storageZone.toLowerCase()}`}
+                    aria-label={t('product.storageAria', { zone: t(`cart.zoneGroup.${product.storageZone}` as any) })}
+                  >
+                    {storageZoneSymbol}
+                  </span>
+                )}
+              </div>
+
+              {product.nutritionFacts && (
+                <button
+                  type="button"
+                  onClick={handleNutritionClick}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-all duration-fast active:scale-[0.98]"
+                  style={{
+                    backgroundColor: 'color-mix(in srgb, var(--color-card) 90%, transparent)',
+                    borderColor: 'var(--color-border)',
+                  }}
+                  aria-label={`${t('product.nutrition')} - ${product.name}`}
+                >
+                  <Info className="h-4 w-4" style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          )}
+
           {product.allergens && product.allergens.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2" role="list" aria-label={t('product.allergens')}>
               {product.allergens.slice(0, 3).map((a) => (
@@ -221,7 +298,11 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
             </div>
           )}
 
-          <h3 className="text-sm font-semibold line-clamp-2 mb-1.5 leading-snug" style={{ color: 'var(--color-foreground)' }}>
+          <h3
+            className="mb-1.5 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-semibold leading-snug sm:line-clamp-2 sm:whitespace-normal"
+            style={{ color: 'var(--color-foreground)' }}
+            data-testid="product-card-title"
+          >
             {product.name}
           </h3>
 
@@ -242,7 +323,7 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
               )}
             </div>
 
-            <div className="mt-3 flex flex-col gap-2 sm:grid sm:grid-cols-[92px,minmax(0,1fr)] sm:items-start">
+            <div className="mt-3 sm:grid sm:grid-cols-[92px,minmax(0,1fr)] sm:items-start sm:gap-2">
               <div className="group/quantity" data-testid="product-card-quantity">
                 <div
                   className="grid grid-cols-3 h-11 rounded-xl border overflow-hidden"
@@ -286,20 +367,19 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
                 type="button"
                 onClick={handleAddToCart}
                 disabled={!inStock}
-                className="h-11 w-full rounded-xl px-3 checkout-btn flex items-center justify-center gap-2 font-semibold transition-all duration-fast disabled:opacity-40 active:scale-[0.98]"
+                className="hidden h-11 w-full items-center justify-center gap-2 rounded-xl px-3 font-semibold transition-all duration-fast disabled:opacity-40 active:scale-[0.98] sm:flex checkout-btn"
                 style={{
                   backgroundColor: justAdded ? 'var(--color-fresh)' : inStock ? 'var(--color-primary)' : 'var(--color-muted)',
                   color: inStock ? 'white' : 'var(--color-muted-foreground)',
                 }}
                 aria-label={inStock ? t('product.addToCartWithQuantity', { quantity }) : t('product.outOfStock')}
-                data-testid="product-card-add"
               >
                 {justAdded ? (
                   <Check className="w-4 h-4" aria-hidden="true" />
                 ) : (
                   <ShoppingCart className="w-4 h-4" aria-hidden="true" />
                 )}
-                <span className="text-xs sm:text-sm">{addToCartLabel}</span>
+                <span className="text-sm">{addToCartLabel}</span>
               </button>
             </div>
           </div>

@@ -51,6 +51,14 @@ type CheckoutState = {
   note: string;
 };
 
+type WishlistServerItemState = {
+  productId: string;
+  variantId: string;
+  addedAt: string;
+  name?: string | null;
+  price?: number | null;
+};
+
 const PRIMARY_PRODUCT = {
   id: 'prod-apples',
   name: 'Organic Gala Apples Family Value Pack',
@@ -176,6 +184,7 @@ const SECONDARY_PRODUCT = {
 };
 
 const PRODUCTS = [PRIMARY_PRODUCT, SECONDARY_PRODUCT];
+const PRODUCTS_BY_ID = new Map(PRODUCTS.map((product) => [product.id, product]));
 
 const RECIPES = [
   {
@@ -290,6 +299,23 @@ async function fulfill(route: Route, data: unknown) {
   });
 }
 
+function buildWishlistServerItem(productId: string): WishlistServerItemState | null {
+  const product = PRODUCTS_BY_ID.get(productId);
+
+  if (!product) {
+    return null;
+  }
+
+  return {
+    productId: product.id,
+    variantId: product.variants[0]?.id ?? '',
+    addedAt: '2026-03-18T08:00:00.000Z',
+    name: product.name,
+    price: product.variants[0]?.pricing?.price?.gross?.amount
+      ?? product.pricing.priceRange.start.gross.amount,
+  };
+}
+
 export async function seedCartStorage(page: Page, cartId = 'cart-1') {
   await page.addInitScript((seedId) => {
     window.localStorage.setItem(
@@ -302,10 +328,27 @@ export async function seedCartStorage(page: Page, cartId = 'cart-1') {
   }, cartId);
 }
 
+export async function seedAuthSession(page: Page) {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('grocery_auth_token', 'test-auth-token');
+    window.localStorage.setItem(
+      'grocery_auth_session',
+      JSON.stringify({
+        id: 'customer-1',
+        email: 'mobile@example.com',
+        fullName: 'Mobile Shopper',
+      })
+    );
+  });
+}
+
 interface MockMobileStorefrontOptions {
   cart?: 'empty' | 'single-item';
   products?: 'ok' | 'error';
+  wishlist?: 'empty' | 'single-item' | 'stale-remove';
   onProductsQuery?: (variables: Record<string, unknown>) => void;
+  onSearchProductsIndexQuery?: (variables: Record<string, unknown>) => void;
+  onWishlistSyncMutation?: (productIds: string[]) => void;
 }
 
 export async function mockMobileStorefront(
@@ -314,13 +357,30 @@ export async function mockMobileStorefront(
 ) {
   let cart = buildCart(options.cart === 'single-item' ? [buildCartLine()] : []);
   let checkout = buildCheckoutState();
+  let wishlistItems = (() => {
+    if (options.wishlist === 'single-item' || options.wishlist === 'stale-remove') {
+      return [buildWishlistServerItem(PRIMARY_PRODUCT.id)].filter(Boolean) as WishlistServerItemState[];
+    }
 
-  await page.route('**/api/graphql', async (route) => {
-    const rawBody = route.request().postData() ?? '{}';
-    const body = JSON.parse(rawBody) as { query?: string; variables?: Record<string, any> };
+    return [] as WishlistServerItemState[];
+  })();
+
+  await page.route('**/api/graphql*', async (route) => {
+    const requestUrl = new URL(route.request().url());
+    const rawBody = route.request().postData();
+    const body = rawBody
+      ? JSON.parse(rawBody) as { query?: string; variables?: Record<string, any>; operationName?: string }
+      : {
+        query: requestUrl.searchParams.get('query') ?? undefined,
+        operationName: requestUrl.searchParams.get('operationName') ?? undefined,
+        variables: requestUrl.searchParams.get('variables')
+          ? JSON.parse(requestUrl.searchParams.get('variables') as string)
+          : undefined,
+      };
     const query = body.query ?? '';
+    const operationName = body.operationName ?? '';
 
-    if (query.includes('query GroceryProducts')) {
+    if (operationName === 'GroceryProducts' || query.includes('query GroceryProducts')) {
       options.onProductsQuery?.(body.variables ?? {});
 
       if (options.products === 'error') {
@@ -351,7 +411,10 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('query SearchProductsIndex')) {
+    if (operationName === 'SearchProductsIndex' || query.includes('query SearchProductsIndex')) {
+      if (route.request().method() === 'POST') {
+        options.onSearchProductsIndexQuery?.(body.variables ?? {});
+      }
       await fulfill(route, {
         products: {
           edges: PRODUCTS.map((product) => ({
@@ -371,7 +434,83 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('query Recipes')) {
+    if (operationName === 'WishlistProducts' || query.includes('query WishlistProducts')) {
+      const variables = body.variables ?? {};
+      const ids = Object.entries(variables)
+        .filter(([key]) => key.startsWith('id'))
+        .map(([, value]) => String(value));
+      const data = ids.reduce<Record<string, unknown>>((acc, productId, index) => {
+        acc[`product${index}`] = PRODUCTS_BY_ID.get(productId) ?? null;
+        return acc;
+      }, {});
+
+      await fulfill(route, data);
+      return;
+    }
+
+    if (operationName === 'Wishlist' || query.includes('query Wishlist')) {
+      await fulfill(route, {
+        wishlist: {
+          items: wishlistItems,
+        },
+      });
+      return;
+    }
+
+    if (operationName === 'WishlistSync' || query.includes('mutation WishlistSync')) {
+      const productIds = Array.isArray(body.variables?.productIds)
+        ? body.variables.productIds.map((value: unknown) => String(value))
+        : [];
+
+      options.onWishlistSyncMutation?.(productIds);
+
+      if (options.wishlist === 'stale-remove') {
+        await fulfill(route, {
+          wishlistSync: {
+            success: true,
+            message: null,
+            items: [buildWishlistServerItem(PRIMARY_PRODUCT.id)].filter(Boolean),
+          },
+        });
+        return;
+      }
+
+      wishlistItems = productIds
+        .map((productId: string) => buildWishlistServerItem(productId))
+        .filter((item: WishlistServerItemState | null): item is WishlistServerItemState => item !== null);
+
+      await fulfill(route, {
+        wishlistSync: {
+          success: true,
+          message: null,
+          items: wishlistItems,
+        },
+      });
+      return;
+    }
+
+    if (operationName === 'GroceryProduct' || query.includes('query GroceryProduct')) {
+      await fulfill(route, {
+        product: {
+          ...PRIMARY_PRODUCT,
+          media: [],
+        },
+      });
+      return;
+    }
+
+    if (operationName === 'ProductRecipes' || query.includes('query ProductRecipes')) {
+      await fulfill(route, {
+        productRecipes: {
+          edges: [],
+          pageInfo: { hasNextPage: false, endCursor: null },
+          totalCount: 0,
+        },
+      });
+      return;
+    }
+
+    if (operationName === 'Recipes' || query.includes('query Recipes')) {
       await fulfill(route, {
         recipes: {
           edges: RECIPES.map((recipe, index) => ({
@@ -385,7 +524,7 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('query CartProductMetadata')) {
+    if (operationName === 'CartProductMetadata' || query.includes('query CartProductMetadata')) {
       await fulfill(route, {
         products: {
           edges: PRODUCTS.map((product) => ({
@@ -412,12 +551,12 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('query GetCart')) {
+    if (operationName === 'GetCart' || query.includes('query GetCart')) {
       await fulfill(route, { cart });
       return;
     }
 
-    if (query.includes('mutation CartCreate')) {
+    if (operationName === 'CartCreate' || query.includes('mutation CartCreate')) {
       const quantity = body.variables?.input?.lines?.[0]?.quantity ?? 1;
       cart = buildCart([buildCartLine(quantity)]);
       await fulfill(route, {
@@ -429,7 +568,7 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('mutation CartLinesAdd')) {
+    if (operationName === 'CartLinesAdd' || query.includes('mutation CartLinesAdd')) {
       const currentQuantity = cart.lines[0]?.quantity ?? 0;
       const addedQuantity = body.variables?.lines?.[0]?.quantity ?? 1;
       cart = buildCart([buildCartLine(currentQuantity + addedQuantity)]);
@@ -442,7 +581,7 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('mutation CartLinesUpdate')) {
+    if (operationName === 'CartLinesUpdate' || query.includes('mutation CartLinesUpdate')) {
       const quantity = body.variables?.lines?.[0]?.quantity ?? 1;
       cart = buildCart(quantity > 0 ? [buildCartLine(quantity)] : []);
       await fulfill(route, {
@@ -454,7 +593,7 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('mutation CartLinesRemove')) {
+    if (operationName === 'CartLinesRemove' || query.includes('mutation CartLinesRemove')) {
       cart = buildCart([]);
       await fulfill(route, {
         cartLinesRemove: {
@@ -465,7 +604,7 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('mutation CartBuyerIdentityUpdate')) {
+    if (operationName === 'CartBuyerIdentityUpdate' || query.includes('mutation CartBuyerIdentityUpdate')) {
       cart = {
         ...cart,
         buyerIdentity: {
@@ -483,7 +622,7 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('mutation CartNoteUpdate')) {
+    if (operationName === 'CartNoteUpdate' || query.includes('mutation CartNoteUpdate')) {
       cart = {
         ...cart,
         note: body.variables?.note ?? '',
@@ -497,14 +636,14 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('query CartDeliveryOptions')) {
+    if (operationName === 'CartDeliveryOptions' || query.includes('query CartDeliveryOptions')) {
       await fulfill(route, {
         cartDeliveryOptions: DELIVERY_OPTIONS,
       });
       return;
     }
 
-    if (query.includes('mutation CartSelectedDeliveryOptionsUpdate')) {
+    if (operationName === 'CartSelectedDeliveryOptionsUpdate' || query.includes('mutation CartSelectedDeliveryOptionsUpdate')) {
       await fulfill(route, {
         cartSelectedDeliveryOptionsUpdate: {
           cart,
@@ -514,14 +653,14 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('query AvailablePaymentMethods')) {
+    if (operationName === 'AvailablePaymentMethods' || query.includes('query AvailablePaymentMethods')) {
       await fulfill(route, {
         availablePaymentMethods: PAYMENT_METHODS,
       });
       return;
     }
 
-    if (query.includes('mutation CheckoutCreateFull')) {
+    if (operationName === 'CheckoutCreateFull' || query.includes('mutation CheckoutCreateFull')) {
       await fulfill(route, {
         checkoutCreateFull: {
           checkout: {
@@ -550,7 +689,7 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('mutation CheckoutShippingAddressUpdate')) {
+    if (operationName === 'CheckoutShippingAddressUpdate' || query.includes('mutation CheckoutShippingAddressUpdate')) {
       await fulfill(route, {
         checkoutShippingAddressUpdate: {
           checkout: {
@@ -563,7 +702,7 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('mutation CheckoutShippingMethodUpdate')) {
+    if (operationName === 'CheckoutShippingMethodUpdate' || query.includes('mutation CheckoutShippingMethodUpdate')) {
       const shippingPrice = DELIVERY_OPTIONS[0].price;
       checkout = {
         ...checkout,
@@ -588,7 +727,7 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('mutation CheckoutPaymentCreate')) {
+    if (operationName === 'CheckoutPaymentCreate' || query.includes('mutation CheckoutPaymentCreate')) {
       await fulfill(route, {
         checkoutPaymentCreate: {
           payment: {
@@ -605,7 +744,7 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('mutation CheckoutNoteUpdate')) {
+    if (operationName === 'CheckoutNoteUpdate' || query.includes('mutation CheckoutNoteUpdate')) {
       checkout = {
         ...checkout,
         note: body.variables?.input?.note ?? '',
@@ -622,7 +761,7 @@ export async function mockMobileStorefront(
       return;
     }
 
-    if (query.includes('mutation CheckoutComplete')) {
+    if (operationName === 'CheckoutComplete' || query.includes('mutation CheckoutComplete')) {
       await fulfill(route, {
         checkoutComplete: {
           order: {

@@ -15,6 +15,7 @@ import type { WishlistItem, WishlistServerItem } from '@/types';
 interface WishlistState {
   items: WishlistItem[];
   guestItems: WishlistItem[];
+  pendingSyncProductIds: string[] | null;
   source: 'guest' | 'server';
   serverStatus: 'unknown' | 'available' | 'unavailable';
   isLoading: boolean;
@@ -48,11 +49,13 @@ type WishlistSetter = (partial: Partial<WishlistState>) => void;
 function setGuestWishlistState(
   set: WishlistSetter,
   items: WishlistItem[],
-  serverStatus: WishlistState['serverStatus'] = 'unknown'
+  serverStatus: WishlistState['serverStatus'] = 'unknown',
+  pendingSyncProductIds: string[] | null = null
 ) {
   set({
     items,
     guestItems: items,
+    pendingSyncProductIds,
     source: 'guest',
     serverStatus,
     initialized: true,
@@ -91,6 +94,19 @@ function upsertWishlistItem(
 
 function removeWishlistItem(items: WishlistItem[], productId: string): WishlistItem[] {
   return items.filter((item) => item.productId !== productId);
+}
+
+function getWishlistProductIds<T extends { productId: string }>(items: T[]): string[] {
+  return Array.from(new Set(items.map((item) => item.productId).filter(Boolean)));
+}
+
+function sameWishlistProductIds(left: string[], right: string[]): boolean {
+  if (left.length !== right.length) return false;
+
+  const normalizedLeft = [...left].sort();
+  const normalizedRight = [...right].sort();
+
+  return normalizedLeft.every((value, index) => value === normalizedRight[index]);
 }
 
 function buildWishlistProductsQuery(productIds: string[]) {
@@ -197,7 +213,7 @@ async function hydrateWishlistItems(
 }
 
 async function syncServerWishlist(nextGuestItems: WishlistItem[], set: WishlistSetter): Promise<boolean> {
-  const productIds = Array.from(new Set(nextGuestItems.map((item) => item.productId).filter(Boolean)));
+  const productIds = getWishlistProductIds(nextGuestItems);
   const response = await graphqlRequest<WishlistSyncResponse>(WISHLIST_SYNC_MUTATION, { productIds });
   const topLevelMessage = getGraphqlErrorMessage(response.errors);
   const payload = response.data?.wishlistSync;
@@ -233,6 +249,22 @@ async function syncServerWishlist(nextGuestItems: WishlistItem[], set: WishlistS
     set({
       items: nextGuestItems,
       guestItems: nextGuestItems,
+      pendingSyncProductIds: productIds,
+      source: 'guest',
+      serverStatus: 'available',
+      initialized: true,
+      isLoading: false,
+    });
+    return true;
+  }
+
+  const responseProductIds = getWishlistProductIds(payload.items);
+
+  if (!sameWishlistProductIds(responseProductIds, productIds)) {
+    set({
+      items: nextGuestItems,
+      guestItems: nextGuestItems,
+      pendingSyncProductIds: productIds,
       source: 'guest',
       serverStatus: 'available',
       initialized: true,
@@ -246,13 +278,14 @@ async function syncServerWishlist(nextGuestItems: WishlistItem[], set: WishlistS
     set({
       items: hydratedItems,
       guestItems: hydratedItems,
+      pendingSyncProductIds: null,
       source: 'server',
       serverStatus: 'available',
       initialized: true,
       isLoading: false,
     });
   } catch {
-    setGuestWishlistState(set, nextGuestItems, 'unavailable');
+    setGuestWishlistState(set, nextGuestItems, 'unavailable', productIds);
   }
 
   return true;
@@ -263,6 +296,7 @@ export const useWishlistStore = create<WishlistState>()(
     (set, get) => ({
       items: [],
       guestItems: [],
+      pendingSyncProductIds: null,
       source: 'guest',
       serverStatus: 'unknown',
       isLoading: false,
@@ -302,15 +336,35 @@ export const useWishlistStore = create<WishlistState>()(
             setGuestWishlistState(set, get().guestItems, 'unavailable');
             return;
           }
+          const currentGuestItems = get().guestItems;
+          const currentGuestProductIds = getWishlistProductIds(currentGuestItems);
+          const serverProductIds = getWishlistProductIds(serverItems);
+          const pendingSyncProductIds = get().pendingSyncProductIds;
+
+          if (
+            pendingSyncProductIds !== null
+            && !sameWishlistProductIds(serverProductIds, pendingSyncProductIds)
+          ) {
+            set({
+              items: currentGuestItems,
+              guestItems: currentGuestItems,
+              pendingSyncProductIds,
+              source: 'guest',
+              serverStatus: 'available',
+              isLoading: false,
+              initialized: true,
+            });
+            return;
+          }
 
           // Server returned an empty wishlist but we have local items — keep
           // the local items so they aren't cleared while the backend isn't
           // persisting yet, and try to sync them up.
-          const currentGuestItems = get().guestItems;
           if (serverItems.length === 0 && currentGuestItems.length > 0) {
             set({
               items: currentGuestItems,
               guestItems: currentGuestItems,
+              pendingSyncProductIds: currentGuestProductIds,
               source: 'guest',
               serverStatus: 'available',
               isLoading: false,
@@ -324,6 +378,7 @@ export const useWishlistStore = create<WishlistState>()(
           set({
             items: hydratedItems,
             guestItems: hydratedItems,
+            pendingSyncProductIds: null,
             source: 'server',
             serverStatus: 'available',
             isLoading: false,
@@ -351,6 +406,7 @@ export const useWishlistStore = create<WishlistState>()(
         set({
           items: nextGuestItems,
           guestItems: nextGuestItems,
+          pendingSyncProductIds: getWishlistProductIds(nextGuestItems),
           source: 'guest',
           isLoading: true,
           initialized: true,
@@ -359,21 +415,22 @@ export const useWishlistStore = create<WishlistState>()(
         try {
           return await syncServerWishlist(nextGuestItems, set);
         } catch {
-          setGuestWishlistState(set, nextGuestItems, 'unavailable');
+          setGuestWishlistState(set, nextGuestItems, 'unavailable', getWishlistProductIds(nextGuestItems));
           return true;
         }
       },
 
       addItem: async (item) => {
-        const previousSource = get().source;
         const nextGuestItems = upsertWishlistItem(get().guestItems, item);
+        const nextProductIds = getWishlistProductIds(nextGuestItems);
         const hasToken = Boolean(getAuthToken());
         const canUseServer = hasToken && get().serverStatus !== 'unavailable';
 
         set({
           items: nextGuestItems,
           guestItems: nextGuestItems,
-          source: canUseServer && previousSource === 'server' ? 'server' : 'guest',
+          pendingSyncProductIds: canUseServer ? nextProductIds : null,
+          source: 'guest',
           initialized: true,
         });
 
@@ -384,21 +441,22 @@ export const useWishlistStore = create<WishlistState>()(
         try {
           return await syncServerWishlist(nextGuestItems, set);
         } catch {
-          setGuestWishlistState(set, nextGuestItems, 'unavailable');
+          setGuestWishlistState(set, nextGuestItems, 'unavailable', nextProductIds);
           return true;
         }
       },
 
       removeItem: async (productId) => {
-        const previousSource = get().source;
         const nextGuestItems = removeWishlistItem(get().guestItems, productId);
+        const nextProductIds = getWishlistProductIds(nextGuestItems);
         const hasToken = Boolean(getAuthToken());
         const canUseServer = hasToken && get().serverStatus !== 'unavailable';
 
         set({
           items: removeWishlistItem(get().items, productId),
           guestItems: nextGuestItems,
-          source: canUseServer && previousSource === 'server' ? 'server' : 'guest',
+          pendingSyncProductIds: canUseServer ? nextProductIds : null,
+          source: 'guest',
           initialized: true,
         });
 
@@ -409,7 +467,7 @@ export const useWishlistStore = create<WishlistState>()(
         try {
           return await syncServerWishlist(nextGuestItems, set);
         } catch {
-          setGuestWishlistState(set, nextGuestItems, 'unavailable');
+          setGuestWishlistState(set, nextGuestItems, 'unavailable', nextProductIds);
           return true;
         }
       },
@@ -428,12 +486,12 @@ export const useWishlistStore = create<WishlistState>()(
         const hasToken = Boolean(getAuthToken());
         const canUseServer = hasToken && get().serverStatus !== 'unavailable';
         const emptyItems: WishlistItem[] = [];
-        const previousSource = get().source;
 
         set({
           items: emptyItems,
           guestItems: emptyItems,
-          source: canUseServer && previousSource === 'server' ? previousSource : 'guest',
+          pendingSyncProductIds: canUseServer ? [] : null,
+          source: 'guest',
           initialized: true,
         });
 
@@ -442,7 +500,7 @@ export const useWishlistStore = create<WishlistState>()(
         try {
           await syncServerWishlist(emptyItems, set);
         } catch {
-          setGuestWishlistState(set, get().guestItems, 'unavailable');
+          setGuestWishlistState(set, get().guestItems, 'unavailable', []);
         }
       },
 
@@ -452,15 +510,20 @@ export const useWishlistStore = create<WishlistState>()(
     }),
     {
       name: 'grocery-wishlist',
-      partialize: (state) => ({ guestItems: state.guestItems }),
+      partialize: (state) => ({
+        guestItems: state.guestItems,
+        pendingSyncProductIds: state.pendingSyncProductIds,
+      }),
       merge: (persistedState, currentState) => {
         const persisted = persistedState as Partial<WishlistState> & { items?: WishlistItem[] } | undefined;
         const guestItems = persisted?.guestItems ?? persisted?.items ?? [];
+        const pendingSyncProductIds = persisted?.pendingSyncProductIds ?? null;
 
         return {
           ...currentState,
           guestItems,
           items: guestItems,
+          pendingSyncProductIds,
           source: 'guest',
           serverStatus: 'unknown',
           initialized: false,

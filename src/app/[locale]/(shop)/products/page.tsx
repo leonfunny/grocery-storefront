@@ -33,9 +33,9 @@ function getProductsErrorMessage(error: CombinedError | undefined | null, fallba
 
 function ProductSkeleton() {
   return (
-    <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
+    <div className="overflow-hidden rounded-none border-0 sm:rounded-xl sm:border" style={{ borderColor: 'var(--color-border)' }}>
       <div className="aspect-square skeleton" />
-      <div className="p-3.5 space-y-2">
+      <div className="space-y-2 p-3.5 sm:bg-[var(--color-card)]">
         <div className="h-4 skeleton rounded w-3/4" />
         <div className="h-4 skeleton rounded w-1/2" />
         <div className="flex justify-between items-end mt-3">
@@ -373,7 +373,7 @@ export default function ProductsPage() {
 
       {/* Products grid */}
       {result.fetching && loadedProducts.length === 0 && !hasProductsError ? (
-        <div className="product-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="product-grid grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
           {Array.from({ length: 12 }).map((_, i) => (
             <ProductSkeleton key={i} />
           ))}
@@ -400,7 +400,7 @@ export default function ProductsPage() {
         </div>
       ) : loadedProducts.length > 0 ? (
         <>
-          <div className="product-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="product-grid grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
             {loadedProducts.map((product: any, index: number) => (
               <ProductCard key={product.id} product={product} imagePriority={index < 4} />
             ))}

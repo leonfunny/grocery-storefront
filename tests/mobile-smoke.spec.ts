@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { mockMobileStorefront, seedCartStorage } from './mobile-fixtures';
+import { mockMobileStorefront, seedAuthSession, seedCartStorage } from './mobile-fixtures';
 
 test.describe('mobile storefront smoke', () => {
   test('uses the header as the only products search surface and avoids duplicate field ids', async ({ page }) => {
@@ -37,6 +37,21 @@ test.describe('mobile storefront smoke', () => {
     }
   });
 
+  test('loads the search index only for the active mobile search surface', async ({ page }) => {
+    let searchIndexCalls = 0;
+
+    await mockMobileStorefront(page, {
+      onSearchProductsIndexQuery: () => {
+        searchIndexCalls += 1;
+      },
+    });
+
+    await page.goto('/en/products?search=apples');
+    await expect(page.locator('input[type="search"]:visible')).toHaveCount(0);
+    await page.waitForTimeout(400);
+    expect(searchIndexCalls).toBe(0);
+  });
+
   test('keeps the mobile header focused on primary actions and moves secondary controls into the menu', async ({ page }) => {
     await mockMobileStorefront(page);
     await page.goto('/en/products');
@@ -53,29 +68,105 @@ test.describe('mobile storefront smoke', () => {
     await expect(page.getByTestId('mobile-nav-language')).toBeVisible();
   });
 
-  test('opens mobile filters in a drawer and stacks product actions vertically', async ({ page }) => {
+  test('opens mobile filters in a drawer and uses overlay product actions', async ({ page }) => {
     await mockMobileStorefront(page);
+    await page.setViewportSize({ width: 375, height: 780 });
     await page.goto('/en/products');
 
     await page.getByRole('button', { name: /filters/i }).click();
     const filterSheet = page.getByTestId('mobile-filter-sheet');
     await expect(filterSheet).toBeVisible();
     await expect(filterSheet.getByRole('button', { name: /close filters/i }).nth(1)).toBeVisible();
+    await filterSheet.locator(':scope > button').evaluate((element: HTMLButtonElement) => element.click());
+    await expect(filterSheet).toBeHidden();
+
+    const columnCount = await page.locator('.product-grid').first().evaluate((element) => {
+      return getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length;
+    });
+
+    expect(columnCount).toBe(2);
 
     const card = page.getByTestId('product-card').first();
     const quantity = card.getByTestId('product-card-quantity');
-    const cta = card.getByTestId('product-card-add');
+    const addButton = card.getByTestId('product-card-add');
+    const wishlistButton = card.getByTestId('product-card-wishlist');
+    const title = card.getByTestId('product-card-title');
     const quantityBox = await quantity.boundingBox();
-    const ctaBox = await cta.boundingBox();
+    const addButtonBox = await addButton.boundingBox();
+    const wishlistButtonBox = await wishlistButton.boundingBox();
 
     expect(quantityBox).not.toBeNull();
-    expect(ctaBox).not.toBeNull();
-    expect(ctaBox!.y).toBeGreaterThan(quantityBox!.y + quantityBox!.height - 1);
+    expect(addButtonBox).not.toBeNull();
+    expect(wishlistButtonBox).not.toBeNull();
+    expect(addButtonBox!.y + addButtonBox!.height).toBeLessThan(quantityBox!.y + 1);
+    expect(Math.round(addButtonBox!.width)).toBe(Math.round(wishlistButtonBox!.width));
+    expect(Math.round(addButtonBox!.height)).toBe(Math.round(wishlistButtonBox!.height));
+    await expect(addButton.getByText(/add to cart/i)).toBeHidden();
 
-    await filterSheet.getByRole('button', { name: /close filters/i }).first().click({ force: true });
-    await expect(filterSheet).toBeHidden();
-    await cta.click();
+    const titleStyles = await title.evaluate((element) => {
+      const styles = getComputedStyle(element);
+
+      return {
+        overflow: styles.overflow,
+        textOverflow: styles.textOverflow,
+        whiteSpace: styles.whiteSpace,
+      };
+    });
+
+    expect(titleStyles.overflow).toBe('hidden');
+    expect(titleStyles.textOverflow).toBe('ellipsis');
+    expect(titleStyles.whiteSpace).toBe('nowrap');
+
+    await addButton.click();
     await expect(page.getByTestId('mobile-cart-count')).toHaveText('1');
+  });
+
+  test('keeps product detail actions compact with wishlist left of add to cart', async ({ page }) => {
+    await mockMobileStorefront(page);
+    await page.goto('/en/products/organic-gala-apples');
+    await expect(page.getByRole('heading', { name: /organic gala apples family value pack/i })).toBeVisible();
+
+    const wishlistButton = page.getByTestId('product-detail-wishlist');
+    const addButton = page.getByTestId('product-detail-add');
+    await expect(wishlistButton).toBeVisible();
+    await expect(addButton).toBeVisible();
+
+    const wishlistBox = await wishlistButton.boundingBox();
+    const addButtonBox = await addButton.boundingBox();
+
+    expect(wishlistBox).not.toBeNull();
+    expect(addButtonBox).not.toBeNull();
+    expect(wishlistBox!.x).toBeLessThan(addButtonBox!.x);
+    expect(Math.round(wishlistBox!.width)).toBe(36);
+    expect(Math.round(wishlistBox!.height)).toBe(36);
+    expect(Math.round(addButtonBox!.height)).toBe(36);
+  });
+
+  test('keeps signed-in wishlist removals after stale sync responses', async ({ page }) => {
+    let syncedProductIds: string[] | null = null;
+
+    await seedAuthSession(page);
+    await mockMobileStorefront(page, {
+      wishlist: 'stale-remove',
+      onWishlistSyncMutation: (productIds) => {
+        syncedProductIds = productIds;
+      },
+    });
+
+    await page.goto('/en/products/organic-gala-apples');
+    await expect(page.getByRole('heading', { name: /organic gala apples family value pack/i })).toBeVisible();
+
+    const wishlistButton = page.getByTestId('product-detail-wishlist');
+    await expect(wishlistButton).toHaveAttribute('aria-label', /remove from wishlist/i);
+
+    await wishlistButton.click();
+
+    await expect(wishlistButton).toHaveAttribute('aria-label', /add to wishlist/i);
+    expect(syncedProductIds).toEqual([]);
+
+    await page.reload();
+    await expect(page.getByRole('heading', { name: /organic gala apples family value pack/i })).toBeVisible();
+    await expect(page.getByTestId('product-detail-wishlist')).toHaveAttribute('aria-label', /add to wishlist/i);
   });
 
   test('shows an explicit error state when the products query fails', async ({ page }) => {
