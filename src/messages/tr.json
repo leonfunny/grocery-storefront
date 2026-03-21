@@ -28,6 +28,7 @@
   "home": {
     "hero": "Taze market ürünleri, kapınıza teslim",
     "heroSub": "Tam besin değeri şeffaflığıyla kaliteli ürünler",
+    "quickCategories": "Popüler kategoriler",
     "shopByZone": "Depolama bölgesine göre alışveriş",
     "frozen": "Dondurulmuş",
     "chilled": "Soğutulmuş",
@@ -47,7 +48,9 @@
     "banner2Cta": "Fırsatları gör",
     "banner3Title": "Dondurulmuş Favoriler",
     "banner3Sub": "Dondurulmuş yemek ve malzemelerde stok yap",
-    "banner3Cta": "Dondurulmuş alışveriş"
+    "banner3Cta": "Dondurulmuş alışveriş",
+    "seeAllProducts": "Tüm ürünleri gör",
+    "productsEmpty": "Henüz ürün yok."
   },
   "products": {
     "title": "Tüm ürünler",
@@ -62,6 +65,17 @@
     "sortPrice": "Fiyat: düşükten yükseğe",
     "sortPriceDesc": "Fiyat: yüksekten düşüğe",
     "sortName": "İsim A-Z",
+    "priceFilter": "Price range",
+    "minimumPrice": "Minimum price",
+    "maximumPrice": "Maximum price",
+    "priceBounds": "Available range: {min}-{max} {currency}",
+    "filterUnavailable": "Unavailable for current catalog",
+    "applyFilters": "Apply filters",
+    "vegan": "Vegan",
+    "vegetarian": "Vegetarian",
+    "gluten-free": "Gluten free",
+    "lactose-free": "Lactose free",
+    "sugar-free": "Sugar free",
     "perUnit": "{unit} başına",
     "organic": "Organik",
     "halal": "Helal",
@@ -295,3 +309,4 @@
     "logoutSuccess": "Signed out successfully"
   }
 }
+

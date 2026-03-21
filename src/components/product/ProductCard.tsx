@@ -156,7 +156,7 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
             </div>
           )}
 
-          <div className="absolute inset-x-0 top-2.5 z-10 flex items-start justify-between px-2.5 sm:hidden">
+          <div className="absolute right-2.5 top-2.5 z-10 sm:hidden">
             <button
               type="button"
               onClick={handleAddToCart}
@@ -176,7 +176,9 @@ export function ProductCard({ product, imagePriority = false }: ProductCardProps
                 <ShoppingCart className="h-4 w-4" aria-hidden="true" />
               )}
             </button>
+          </div>
 
+          <div className="absolute bottom-2.5 left-2.5 z-10 sm:hidden">
             <button
               type="button"
               onClick={handleWishlistToggle}

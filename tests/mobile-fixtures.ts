@@ -64,7 +64,11 @@ const PRIMARY_PRODUCT = {
   name: 'Organic Gala Apples Family Value Pack',
   slug: 'organic-gala-apples',
   description: 'Sweet and crisp apples ready for everyday delivery.',
-  thumbnail: null,
+  thumbnail: {
+    id: 'thumb-apples',
+    url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80',
+    alt: 'Fresh produce arranged on a market table',
+  },
   allergens: ['nuts', 'milk', 'soybeans'],
   dietaryTags: ['vegan'],
   calories: 52,
@@ -183,8 +187,121 @@ const SECONDARY_PRODUCT = {
   ],
 };
 
-const PRODUCTS = [PRIMARY_PRODUCT, SECONDARY_PRODUCT];
+const THIRD_PRODUCT = {
+  ...PRIMARY_PRODUCT,
+  id: 'prod-bread',
+  name: 'Sourdough Sandwich Bread',
+  slug: 'sourdough-sandwich-bread',
+  allergens: ['gluten'],
+  dietaryTags: ['vegetarian'],
+  storageZone: 'AMBIENT',
+  category: {
+    id: 'cat-bakery',
+    name: 'Bakery',
+    slug: 'bakery',
+  },
+  pricing: {
+    priceRange: {
+      start: {
+        gross: {
+          amount: 6.79,
+          currency: 'PLN',
+        },
+      },
+    },
+    priceRangeUndiscounted: {
+      start: {
+        gross: {
+          amount: 7.49,
+          currency: 'PLN',
+        },
+      },
+    },
+    onSale: true,
+  },
+  variants: [
+    {
+      id: 'variant-bread',
+      name: '1 loaf',
+      sku: 'BREAD-1',
+      pricing: {
+        price: {
+          gross: {
+            amount: 6.79,
+            currency: 'PLN',
+          },
+        },
+      },
+      quantityAvailable: 18,
+      expiryTracking: true,
+      shelfLifeDays: 4,
+      preOrder: null,
+    },
+  ],
+};
+
+const FOURTH_PRODUCT = {
+  ...PRIMARY_PRODUCT,
+  id: 'prod-ravioli',
+  name: 'Spinach Ravioli Family Pack',
+  slug: 'spinach-ravioli-family-pack',
+  allergens: ['gluten', 'eggs'],
+  dietaryTags: ['vegetarian'],
+  storageZone: 'FROZEN',
+  category: {
+    id: 'cat-frozen',
+    name: 'Frozen',
+    slug: 'frozen',
+  },
+  pricing: {
+    priceRange: {
+      start: {
+        gross: {
+          amount: 18.49,
+          currency: 'PLN',
+        },
+      },
+    },
+    priceRangeUndiscounted: {
+      start: {
+        gross: {
+          amount: 18.49,
+          currency: 'PLN',
+        },
+      },
+    },
+    onSale: false,
+  },
+  variants: [
+    {
+      id: 'variant-ravioli',
+      name: '750 g',
+      sku: 'RAVIOLI-750',
+      pricing: {
+        price: {
+          gross: {
+            amount: 18.49,
+            currency: 'PLN',
+          },
+        },
+      },
+      quantityAvailable: 9,
+      expiryTracking: true,
+      shelfLifeDays: 120,
+      preOrder: null,
+    },
+  ],
+};
+
+const PRODUCTS = [PRIMARY_PRODUCT, SECONDARY_PRODUCT, THIRD_PRODUCT, FOURTH_PRODUCT];
 const PRODUCTS_BY_ID = new Map(PRODUCTS.map((product) => [product.id, product]));
+const PRODUCTS_WITH_EMPTY_FACETS = PRODUCTS.map((product) => ({
+  ...product,
+  allergens: [],
+  dietaryTags: [],
+  storageZone: '',
+  certifications: [],
+}));
 
 const RECIPES = [
   {
@@ -236,6 +353,59 @@ function buildProductEdge(product: (typeof PRODUCTS)[number], index: number) {
     cursor: `cursor-${index + 1}`,
     node: product,
   };
+}
+
+function getProductPrice(product: (typeof PRODUCTS)[number]) {
+  return product.variants[0]?.pricing?.price?.gross?.amount
+    ?? product.pricing.priceRange.start.gross.amount;
+}
+
+function matchesProductsFilter(product: (typeof PRODUCTS)[number], filter: Record<string, any> | undefined) {
+  if (!filter) {
+    return true;
+  }
+
+  if (Array.isArray(filter.excludeAllergens) && filter.excludeAllergens.length > 0) {
+    if (filter.excludeAllergens.some((allergen: string) => product.allergens.includes(allergen))) {
+      return false;
+    }
+  }
+
+  if (Array.isArray(filter.dietaryTags) && filter.dietaryTags.length > 0) {
+    if (!filter.dietaryTags.every((tag: string) => product.dietaryTags.includes(tag))) {
+      return false;
+    }
+  }
+
+  if (typeof filter.storageZone === 'string' && filter.storageZone.length > 0) {
+    if (product.storageZone !== filter.storageZone) {
+      return false;
+    }
+  }
+
+  if (Array.isArray(filter.certifications) && filter.certifications.length > 0) {
+    const certifications = Array.isArray(product.certifications)
+      ? product.certifications.map((value: string) => value.toLowerCase())
+      : [];
+
+    if (!filter.certifications.every((certification: string) => certifications.includes(String(certification).toLowerCase()))) {
+      return false;
+    }
+  }
+
+  if (filter.price && typeof filter.price === 'object') {
+    const price = getProductPrice(product);
+
+    if (typeof filter.price.gte === 'number' && price < filter.price.gte) {
+      return false;
+    }
+
+    if (typeof filter.price.lte === 'number' && price > filter.price.lte) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function buildCart(lines: CartLineState[]): CartState {
@@ -345,6 +515,7 @@ export async function seedAuthSession(page: Page) {
 interface MockMobileStorefrontOptions {
   cart?: 'empty' | 'single-item';
   products?: 'ok' | 'error';
+  facets?: 'populated' | 'empty';
   wishlist?: 'empty' | 'single-item' | 'stale-remove';
   onProductsQuery?: (variables: Record<string, unknown>) => void;
   onSearchProductsIndexQuery?: (variables: Record<string, unknown>) => void;
@@ -355,11 +526,14 @@ export async function mockMobileStorefront(
   page: Page,
   options: MockMobileStorefrontOptions = {}
 ) {
+  const products = options.facets === 'empty' ? PRODUCTS_WITH_EMPTY_FACETS : PRODUCTS;
+  const productsById = new Map(products.map((product) => [product.id, product]));
+  const featuredProduct = products[0] ?? PRIMARY_PRODUCT;
   let cart = buildCart(options.cart === 'single-item' ? [buildCartLine()] : []);
   let checkout = buildCheckoutState();
   let wishlistItems = (() => {
     if (options.wishlist === 'single-item' || options.wishlist === 'stale-remove') {
-      return [buildWishlistServerItem(PRIMARY_PRODUCT.id)].filter(Boolean) as WishlistServerItemState[];
+      return [buildWishlistServerItem(featuredProduct.id)].filter(Boolean) as WishlistServerItemState[];
     }
 
     return [] as WishlistServerItemState[];
@@ -401,11 +575,13 @@ export async function mockMobileStorefront(
         return;
       }
 
+      const filteredProducts = products.filter((product) => matchesProductsFilter(product, body.variables?.filter));
+
       await fulfill(route, {
         products: {
-          edges: PRODUCTS.map(buildProductEdge),
+          edges: filteredProducts.map(buildProductEdge),
           pageInfo: { hasNextPage: false, endCursor: null },
-          totalCount: PRODUCTS.length,
+          totalCount: filteredProducts.length,
         },
       });
       return;
@@ -417,7 +593,7 @@ export async function mockMobileStorefront(
       }
       await fulfill(route, {
         products: {
-          edges: PRODUCTS.map((product) => ({
+          edges: products.map((product) => ({
             node: {
               id: product.id,
               name: product.name,
@@ -440,7 +616,7 @@ export async function mockMobileStorefront(
         .filter(([key]) => key.startsWith('id'))
         .map(([, value]) => String(value));
       const data = ids.reduce<Record<string, unknown>>((acc, productId, index) => {
-        acc[`product${index}`] = PRODUCTS_BY_ID.get(productId) ?? null;
+        acc[`product${index}`] = productsById.get(productId) ?? null;
         return acc;
       }, {});
 
@@ -469,7 +645,7 @@ export async function mockMobileStorefront(
           wishlistSync: {
             success: true,
             message: null,
-            items: [buildWishlistServerItem(PRIMARY_PRODUCT.id)].filter(Boolean),
+            items: [buildWishlistServerItem(featuredProduct.id)].filter(Boolean),
           },
         });
         return;
@@ -492,7 +668,7 @@ export async function mockMobileStorefront(
     if (operationName === 'GroceryProduct' || query.includes('query GroceryProduct')) {
       await fulfill(route, {
         product: {
-          ...PRIMARY_PRODUCT,
+          ...featuredProduct,
           media: [],
         },
       });
@@ -527,7 +703,7 @@ export async function mockMobileStorefront(
     if (operationName === 'CartProductMetadata' || query.includes('query CartProductMetadata')) {
       await fulfill(route, {
         products: {
-          edges: PRODUCTS.map((product) => ({
+          edges: products.map((product) => ({
             node: {
               id: product.id,
               name: product.name,

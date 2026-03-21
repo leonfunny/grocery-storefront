@@ -57,6 +57,7 @@ test.describe('mobile storefront smoke', () => {
     await page.goto('/en/products');
 
     await expect(page.getByRole('button', { name: /open search/i })).toBeVisible();
+    await expect(page.getByTestId('mobile-header-wishlist')).toBeVisible();
     await expect(page.getByRole('link', { name: /^cart/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /open menu/i })).toBeVisible();
     await expect(page.getByTestId('mobile-header-theme')).toBeHidden();
@@ -80,28 +81,35 @@ test.describe('mobile storefront smoke', () => {
     await filterSheet.locator(':scope > button').evaluate((element: HTMLButtonElement) => element.click());
     await expect(filterSheet).toBeHidden();
 
-    const columnCount = await page.locator('.product-grid').first().evaluate((element) => {
+    const grid = page.getByTestId('mobile-products-grid');
+    const columnCount = await grid.evaluate((element) => {
       return getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length;
     });
 
     expect(columnCount).toBe(2);
 
-    const card = page.getByTestId('product-card').first();
-    const quantity = card.getByTestId('product-card-quantity');
-    const addButton = card.getByTestId('product-card-add');
-    const wishlistButton = card.getByTestId('product-card-wishlist');
-    const title = card.getByTestId('product-card-title');
+    const card = page.getByTestId('mobile-product-card').first();
+    const media = card.getByTestId('mobile-product-card-media');
+    const quantity = card.getByTestId('mobile-product-card-stepper');
+    const addButton = card.getByTestId('mobile-product-card-add');
+    const wishlistButton = card.getByTestId('mobile-product-card-wishlist');
+    const title = card.getByTestId('mobile-product-card-title');
+    const mediaBox = await media.boundingBox();
     const quantityBox = await quantity.boundingBox();
     const addButtonBox = await addButton.boundingBox();
     const wishlistButtonBox = await wishlistButton.boundingBox();
 
+    expect(mediaBox).not.toBeNull();
     expect(quantityBox).not.toBeNull();
     expect(addButtonBox).not.toBeNull();
     expect(wishlistButtonBox).not.toBeNull();
-    expect(addButtonBox!.y + addButtonBox!.height).toBeLessThan(quantityBox!.y + 1);
+    expect(addButtonBox!.y + addButtonBox!.height).toBeLessThan(quantityBox!.y + 4);
+    expect(wishlistButtonBox!.x).toBeLessThan(addButtonBox!.x + 1);
+    expect(addButtonBox!.y - mediaBox!.y).toBeLessThanOrEqual(12);
+    expect(mediaBox!.y + mediaBox!.height - (wishlistButtonBox!.y + wishlistButtonBox!.height)).toBeLessThanOrEqual(12);
     expect(Math.round(addButtonBox!.width)).toBe(Math.round(wishlistButtonBox!.width));
     expect(Math.round(addButtonBox!.height)).toBe(Math.round(wishlistButtonBox!.height));
-    await expect(addButton.getByText(/add to cart/i)).toBeHidden();
+    await expect(addButton.getByText(/add to cart/i)).toHaveCount(0);
 
     const titleStyles = await title.evaluate((element) => {
       const styles = getComputedStyle(element);

@@ -16,6 +16,7 @@ import {
   CART_SUBMIT_FOR_COMPLETION_MUTATION,
   GET_CART_QUERY,
 } from '@/lib/graphql/operations/grocery';
+import { resolveChannel } from '@/lib/channel';
 import { getGraphqlErrorMessage, graphqlRequest } from '@/lib/graphql/request';
 import { useSalonStore } from '@/stores/salon-store';
 import type {
@@ -279,10 +280,7 @@ function createEmptyState(): Omit<
 }
 
 function getCurrentChannel(): string {
-  return process.env.NEXT_PUBLIC_CHANNEL
-    || useSalonStore.getState().salonSlug
-    || process.env.NEXT_PUBLIC_SALON_SLUG
-    || 'default';
+  return resolveChannel(useSalonStore.getState().salonSlug);
 }
 
 function getFallbackCurrency(): string {

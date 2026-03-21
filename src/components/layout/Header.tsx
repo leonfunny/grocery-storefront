@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ShoppingCart, Search, Menu, X, Leaf, Heart, LogIn, LogOut, UserRound, ChevronDown, Package, MapPin, Shield } from 'lucide-react';
@@ -25,12 +25,16 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
+  const [mobileHeaderVisible, setMobileHeaderVisible] = useState(true);
   const itemCount = useCartStore((s) => s.getItemCount());
   const cartInitialized = useCartStore((s) => s.initialized);
   const wishlistCount = useWishlistStore((s) => s.items.length);
   const session = useAuthStore((s) => s.session);
   const logout = useAuthStore((s) => s.logout);
   const [isMounted, setIsMounted] = useState(false);
+  const idleCycleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const idleCycleIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastScrollYRef = useRef(0);
   const isProductsRoute = pathname === '/products';
   const activeProductsSearch = searchParams.get('search') || '';
 
@@ -41,6 +45,91 @@ export function Header() {
       setSearchValue(activeProductsSearch);
     }
   }, [activeProductsSearch, isProductsRoute]);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const resetIdleCycle = () => {
+      setMobileHeaderVisible(true);
+
+      if (idleCycleTimeoutRef.current) {
+        clearTimeout(idleCycleTimeoutRef.current);
+      }
+
+      if (idleCycleIntervalRef.current) {
+        clearInterval(idleCycleIntervalRef.current);
+      }
+
+      idleCycleTimeoutRef.current = setTimeout(() => {
+        idleCycleIntervalRef.current = setInterval(() => {
+          setMobileHeaderVisible((current) => !current);
+        }, 5000);
+      }, 5000);
+    };
+
+    const handleWindowScroll = () => {
+      if (window.innerWidth >= 768) return;
+
+      const currentScrollY = window.scrollY;
+      const previousScrollY = lastScrollYRef.current;
+      const delta = currentScrollY - previousScrollY;
+
+      lastScrollYRef.current = currentScrollY;
+      resetIdleCycle();
+
+      if (menuOpen || searchOpen) {
+        setMobileHeaderVisible(true);
+        return;
+      }
+
+      if (currentScrollY <= 24) {
+        setMobileHeaderVisible(true);
+        return;
+      }
+
+      if (Math.abs(delta) < 6) {
+        return;
+      }
+
+      if (delta > 0) {
+        setMobileHeaderVisible(false);
+      } else {
+        setMobileHeaderVisible(true);
+      }
+    };
+
+    const handleInteraction = () => {
+      if (window.innerWidth >= 768) return;
+      resetIdleCycle();
+    };
+
+    lastScrollYRef.current = window.scrollY;
+    resetIdleCycle();
+
+    window.addEventListener('scroll', handleWindowScroll, { passive: true });
+    window.addEventListener('pointerdown', handleInteraction, { passive: true });
+    window.addEventListener('keydown', handleInteraction);
+
+    return () => {
+      window.removeEventListener('scroll', handleWindowScroll);
+      window.removeEventListener('pointerdown', handleInteraction);
+      window.removeEventListener('keydown', handleInteraction);
+
+      if (idleCycleTimeoutRef.current) {
+        clearTimeout(idleCycleTimeoutRef.current);
+      }
+
+      if (idleCycleIntervalRef.current) {
+        clearInterval(idleCycleIntervalRef.current);
+      }
+    };
+  }, [isMounted, menuOpen, searchOpen]);
+
+  useEffect(() => {
+    if (menuOpen || searchOpen) {
+      setMobileHeaderVisible(true);
+    }
+  }, [menuOpen, searchOpen]);
 
   function handleSearch(query: string) {
     const q = query.trim();
@@ -81,13 +170,15 @@ export function Header() {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b backdrop-blur-md"
+      className="sticky top-0 z-50 border-b backdrop-blur-md transition-transform duration-normal ease-out md:translate-y-0"
       style={{
         height: 'var(--header-height)',
         borderColor: 'var(--color-border)',
         backgroundColor: 'color-mix(in srgb, var(--color-background) 92%, transparent)',
+        transform: isMounted && typeof window !== 'undefined' && window.innerWidth < 768 && !mobileHeaderVisible ? 'translateY(calc(-1 * var(--header-height)))' : undefined,
       }}
       role="banner"
+      data-testid="mobile-sticky-header"
     >
       <div className="container-grocery h-full flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2.5 shrink-0 group" aria-label="Grocery Store Home">
@@ -243,6 +334,24 @@ export function Header() {
               <span>{t('login')}</span>
             </Link>
           )}
+
+          <Link
+            href="/wishlist"
+            className="relative p-2.5 rounded-xl hover-surface md:hidden"
+            aria-label={`${t('wishlist')}${isMounted && wishlistCount > 0 ? `, ${tCommon('itemCount', { count: wishlistCount })}` : ''}`}
+            data-testid="mobile-header-wishlist"
+          >
+            <Heart className="w-5 h-5" style={{ color: 'var(--color-foreground)' }} />
+            {isMounted && wishlistCount > 0 && (
+              <span
+                className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
+                style={{ backgroundColor: 'var(--color-primary)' }}
+                aria-hidden="true"
+              >
+                {wishlistCount > 99 ? '99+' : wishlistCount}
+              </span>
+            )}
+          </Link>
 
           <Link
             href="/cart"

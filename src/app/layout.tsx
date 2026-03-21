@@ -11,6 +11,9 @@ import './globals.css';
 export const metadata: Metadata = {
   title: process.env.NEXT_PUBLIC_STORE_NAME || 'Grocery Store',
   description: process.env.NEXT_PUBLIC_STORE_DESCRIPTION || 'Fresh groceries with full nutritional transparency',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export const viewport: Viewport = {

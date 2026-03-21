@@ -28,6 +28,7 @@
   "home": {
     "hero": "Thực phẩm tươi sạch, giao tận cửa nhà",
     "heroSub": "Sản phẩm chất lượng với thông tin dinh dưỡng minh bạch",
+    "quickCategories": "Danh mục phổ biến",
     "shopByZone": "Mua theo khu vực bảo quản",
     "frozen": "Đông lạnh",
     "chilled": "Ướp lạnh",
@@ -47,7 +48,9 @@
     "banner2Cta": "Xem ưu đãi",
     "banner3Title": "Đông Lạnh Yêu Thích",
     "banner3Sub": "Dự trữ các bữa ăn và nguyên liệu đông lạnh",
-    "banner3Cta": "Mua đồ đông lạnh"
+    "banner3Cta": "Mua đồ đông lạnh",
+    "seeAllProducts": "Xem tất cả sản phẩm",
+    "productsEmpty": "Chưa có sản phẩm nào."
   },
   "products": {
     "title": "Tất cả sản phẩm",
@@ -62,6 +65,17 @@
     "sortPrice": "Giá: thấp đến cao",
     "sortPriceDesc": "Giá: cao đến thấp",
     "sortName": "Tên A-Z",
+    "priceFilter": "Price range",
+    "minimumPrice": "Minimum price",
+    "maximumPrice": "Maximum price",
+    "priceBounds": "Available range: {min}-{max} {currency}",
+    "filterUnavailable": "Unavailable for current catalog",
+    "applyFilters": "Apply filters",
+    "vegan": "Vegan",
+    "vegetarian": "Vegetarian",
+    "gluten-free": "Gluten free",
+    "lactose-free": "Lactose free",
+    "sugar-free": "Sugar free",
     "perUnit": "mỗi {unit}",
     "organic": "Hữu cơ",
     "halal": "Halal",
@@ -295,3 +309,4 @@
     "logoutSuccess": "Signed out successfully"
   }
 }
+

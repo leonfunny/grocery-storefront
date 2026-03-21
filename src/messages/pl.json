@@ -45,6 +45,7 @@
   "home": {
     "hero": "Świeże produkty, prosto do Twoich drzwi",
     "heroSub": "Produkty najwyższej jakości z pełną przejrzystością wartości odżywczych",
+    "quickCategories": "Popularne kategorie",
     "shopByZone": "Zakupy według strefy przechowywania",
     "frozen": "Mrożone",
     "chilled": "Chłodzone",
@@ -82,6 +83,17 @@
     "sortPrice": "Cena: rosnąco",
     "sortPriceDesc": "Cena: malejąco",
     "sortName": "Nazwa A-Z",
+    "priceFilter": "Zakres cen",
+    "minimumPrice": "Cena minimalna",
+    "maximumPrice": "Cena maksymalna",
+    "priceBounds": "Dostępny zakres: {min}-{max} {currency}",
+    "filterUnavailable": "Unavailable for current catalog",
+    "applyFilters": "Zastosuj filtry",
+    "vegan": "Wegańskie",
+    "vegetarian": "Wegetariańskie",
+    "gluten-free": "Bez glutenu",
+    "lactose-free": "Bez laktozy",
+    "sugar-free": "Bez cukru",
     "perUnit": "za {unit}",
     "organic": "Ekologiczne",
     "halal": "Halal",
@@ -345,3 +357,4 @@
     "switchTo": "Przełącz na motyw {theme}"
   }
 }
+

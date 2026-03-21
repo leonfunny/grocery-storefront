@@ -28,6 +28,7 @@
   "home": {
     "hero": "Свежие продукты — доставка к вашей двери",
     "heroSub": "Качественные товары с полной прозрачностью состава",
+    "quickCategories": "Популярные категории",
     "shopByZone": "Покупки по зоне хранения",
     "frozen": "Замороженные",
     "chilled": "Охлаждённые",
@@ -47,7 +48,9 @@
     "banner2Cta": "Смотреть скидки",
     "banner3Title": "Замороженные любимцы",
     "banner3Sub": "Запаситесь замороженными блюдами и ингредиентами",
-    "banner3Cta": "Купить заморозку"
+    "banner3Cta": "Купить заморозку",
+    "seeAllProducts": "Все товары",
+    "productsEmpty": "Товары пока недоступны."
   },
   "products": {
     "title": "Все товары",
@@ -62,6 +65,17 @@
     "sortPrice": "Цена: по возрастанию",
     "sortPriceDesc": "Цена: по убыванию",
     "sortName": "Название А–Я",
+    "priceFilter": "Price range",
+    "minimumPrice": "Minimum price",
+    "maximumPrice": "Maximum price",
+    "priceBounds": "Available range: {min}-{max} {currency}",
+    "filterUnavailable": "Unavailable for current catalog",
+    "applyFilters": "Apply filters",
+    "vegan": "Vegan",
+    "vegetarian": "Vegetarian",
+    "gluten-free": "Gluten free",
+    "lactose-free": "Lactose free",
+    "sugar-free": "Sugar free",
     "perUnit": "за {unit}",
     "organic": "Органик",
     "halal": "Халяль",
@@ -295,3 +309,4 @@
     "logoutSuccess": "Signed out successfully"
   }
 }
+

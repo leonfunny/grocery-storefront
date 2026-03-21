@@ -11,11 +11,14 @@ const EU_14_ALLERGENS = [
 interface AllergenFilterProps {
   selected: string[];
   onChange: (allergens: string[]) => void;
+  options?: readonly string[];
+  disabled?: boolean;
 }
 
-export function AllergenFilter({ selected, onChange }: AllergenFilterProps) {
+export function AllergenFilter({ selected, onChange, options, disabled = false }: AllergenFilterProps) {
   const t = useTranslations('allergens');
   const tProducts = useTranslations('products');
+  const visibleOptions = Array.from(new Set([...(options ?? EU_14_ALLERGENS), ...selected]));
 
   function toggle(code: string) {
     if (selected.includes(code)) {
@@ -34,7 +37,7 @@ export function AllergenFilter({ selected, onChange }: AllergenFilterProps) {
             {tProducts('allergenFilter')}
           </span>
         </div>
-        {selected.length > 0 && (
+        {selected.length > 0 && !disabled && (
           <button
             type="button"
             onClick={() => onChange([])}
@@ -47,14 +50,15 @@ export function AllergenFilter({ selected, onChange }: AllergenFilterProps) {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {EU_14_ALLERGENS.map((code) => {
+        {visibleOptions.map((code) => {
           const isActive = selected.includes(code);
           return (
             <button
               key={code}
               type="button"
               onClick={() => toggle(code)}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors duration-fast"
+              disabled={disabled}
+              className="inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors duration-fast disabled:cursor-not-allowed disabled:opacity-50"
               style={{
                 borderColor: isActive ? 'var(--color-allergen)' : 'var(--color-border)',
                 backgroundColor: isActive ? 'var(--color-allergen-bg)' : 'transparent',

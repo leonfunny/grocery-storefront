@@ -28,6 +28,7 @@
   "home": {
     "hero": "Свіжі продукти з доставкою додому",
     "heroSub": "Якісні товари з повною прозорістю щодо харчової цінності",
+    "quickCategories": "Популярні категорії",
     "shopByZone": "Покупки за зоною зберігання",
     "frozen": "Заморожені",
     "chilled": "Охолоджені",
@@ -47,7 +48,9 @@
     "banner2Cta": "Переглянути акції",
     "banner3Title": "Улюблені заморожені товари",
     "banner3Sub": "Запасіться замороженими стравами та інгредієнтами",
-    "banner3Cta": "Купити заморожене"
+    "banner3Cta": "Купити заморожене",
+    "seeAllProducts": "Переглянути всі товари",
+    "productsEmpty": "Товари ще недоступні."
   },
   "products": {
     "title": "Всі товари",
@@ -62,6 +65,17 @@
     "sortPrice": "Ціна: від низької до високої",
     "sortPriceDesc": "Ціна: від високої до низької",
     "sortName": "Назва А-Я",
+    "priceFilter": "Price range",
+    "minimumPrice": "Minimum price",
+    "maximumPrice": "Maximum price",
+    "priceBounds": "Available range: {min}-{max} {currency}",
+    "filterUnavailable": "Unavailable for current catalog",
+    "applyFilters": "Apply filters",
+    "vegan": "Vegan",
+    "vegetarian": "Vegetarian",
+    "gluten-free": "Gluten free",
+    "lactose-free": "Lactose free",
+    "sugar-free": "Sugar free",
     "perUnit": "за {unit}",
     "organic": "Органічний",
     "halal": "Халяль",
@@ -295,3 +309,4 @@
     "logoutSuccess": "Signed out successfully"
   }
 }
+

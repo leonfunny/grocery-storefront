@@ -45,6 +45,7 @@
   "home": {
     "hero": "Fresh groceries, delivered to your door",
     "heroSub": "Quality products with full nutritional transparency",
+    "quickCategories": "Popular categories",
     "shopByZone": "Shop by storage zone",
     "frozen": "Frozen",
     "chilled": "Chilled",
@@ -82,6 +83,17 @@
     "sortPrice": "Price: low to high",
     "sortPriceDesc": "Price: high to low",
     "sortName": "Name A-Z",
+    "priceFilter": "Price range",
+    "minimumPrice": "Minimum price",
+    "maximumPrice": "Maximum price",
+    "priceBounds": "Available range: {min}-{max} {currency}",
+    "filterUnavailable": "Unavailable for current catalog",
+    "applyFilters": "Apply filters",
+    "vegan": "Vegan",
+    "vegetarian": "Vegetarian",
+    "gluten-free": "Gluten free",
+    "lactose-free": "Lactose free",
+    "sugar-free": "Sugar free",
     "perUnit": "per {unit}",
     "organic": "Organic",
     "halal": "Halal",
@@ -345,3 +357,4 @@
     "switchTo": "Switch to {theme} theme"
   }
 }
+

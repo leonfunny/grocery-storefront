@@ -28,6 +28,7 @@
   "home": {
     "hero": "Frische Lebensmittel, direkt an Ihre Tür geliefert",
     "heroSub": "Qualitätsprodukte mit vollständiger Nährstofftransparenz",
+    "quickCategories": "Beliebte Kategorien",
     "shopByZone": "Nach Lagerzone einkaufen",
     "frozen": "Tiefgekühlt",
     "chilled": "Gekühlt",
@@ -47,7 +48,9 @@
     "banner2Cta": "Angebote entdecken",
     "banner3Title": "Tiefkühl-Favoriten",
     "banner3Sub": "Tiefkühlgerichte und Zutaten auf Vorrat kaufen",
-    "banner3Cta": "Tiefkühlkost kaufen"
+    "banner3Cta": "Tiefkühlkost kaufen",
+    "seeAllProducts": "Alle Produkte anzeigen",
+    "productsEmpty": "Noch keine Produkte verfügbar."
   },
   "products": {
     "title": "Alle Produkte",
@@ -62,6 +65,17 @@
     "sortPrice": "Preis: aufsteigend",
     "sortPriceDesc": "Preis: absteigend",
     "sortName": "Name A–Z",
+    "priceFilter": "Price range",
+    "minimumPrice": "Minimum price",
+    "maximumPrice": "Maximum price",
+    "priceBounds": "Available range: {min}-{max} {currency}",
+    "filterUnavailable": "Unavailable for current catalog",
+    "applyFilters": "Apply filters",
+    "vegan": "Vegan",
+    "vegetarian": "Vegetarian",
+    "gluten-free": "Gluten free",
+    "lactose-free": "Lactose free",
+    "sugar-free": "Sugar free",
     "perUnit": "pro {unit}",
     "organic": "Bio",
     "halal": "Halal",
@@ -295,3 +309,4 @@
     "logoutSuccess": "Signed out successfully"
   }
 }
+
