@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   Banknote,
   Building2,
-  ChevronLeft,
   ChevronRight,
   CreditCard,
   Loader2,
@@ -19,7 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { CheckoutProgress } from '@/components/checkout/CheckoutProgress';
+import { CheckoutSection, CheckoutProgressBar } from '@/components/checkout/CheckoutProgress';
 import { Link, useRouter } from '@/i18n/navigation';
 import {
   AVAILABLE_PAYMENT_METHODS_QUERY,
@@ -976,7 +975,7 @@ export default function CheckoutPage() {
         {t('title')}
       </h1>
 
-      <CheckoutProgress currentStep={step} onStepClick={setStep} completedSteps={completedSteps} />
+      <CheckoutProgressBar currentStep={step} completedSteps={completedSteps} />
 
       {(errorBanner || cartError) && (
         <div
@@ -992,24 +991,30 @@ export default function CheckoutPage() {
       )}
 
       <div className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          {step === 'delivery' && (
-            <section className="rounded-2xl border p-4 sm:p-5 md:p-6" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
-              <h2 className="heading-section text-lg mb-5" style={{ color: 'var(--color-foreground)' }}>
-                {t('delivery')}
-              </h2>
-
+        <div className="lg:col-span-2 space-y-3">
+          {/* ── Step 1: Delivery ── */}
+          <CheckoutSection
+            step="delivery"
+            currentStep={step}
+            completedSteps={completedSteps}
+            onToggle={setStep}
+            summaryContent={
+              form.firstName
+                ? `${form.firstName} ${form.lastName} · ${form.streetAddress1}, ${form.city}`
+                : undefined
+            }
+          >
               <div className="grid gap-4 sm:grid-cols-2">
-                {[
-                  ['firstName', t('firstName')],
-                  ['lastName', t('lastName')],
-                  ['email', t('email')],
-                  ['phone', t('phone')],
-                  ['streetAddress1', t('address')],
-                  ['city', t('city')],
-                  ['postalCode', t('postalCode')],
-                  ['country', t('country')],
-                ].map(([key, label]) => {
+                {([
+                  { key: 'firstName',      label: t('firstName'),   autoComplete: 'given-name',            type: 'text',  inputMode: 'text'    as const },
+                  { key: 'lastName',       label: t('lastName'),    autoComplete: 'family-name',           type: 'text',  inputMode: 'text'    as const },
+                  { key: 'email',          label: t('email'),       autoComplete: 'email',                 type: 'email', inputMode: 'email'   as const },
+                  { key: 'phone',          label: t('phone'),       autoComplete: 'tel',                   type: 'tel',   inputMode: 'tel'     as const },
+                  { key: 'streetAddress1', label: t('address'),     autoComplete: 'street-address',        type: 'text',  inputMode: 'text'    as const },
+                  { key: 'city',           label: t('city'),        autoComplete: 'address-level2',        type: 'text',  inputMode: 'text'    as const },
+                  { key: 'postalCode',     label: t('postalCode'),  autoComplete: 'postal-code',           type: 'text',  inputMode: 'text'    as const },
+                  { key: 'country',        label: t('country'),     autoComplete: 'country',               type: 'text',  inputMode: 'text'    as const },
+                ] as const).map(({ key, label, autoComplete, type, inputMode }) => {
                   const field = key as keyof DeliveryFormState;
                   const isWide = field === 'streetAddress1' || field === 'email';
                   return (
@@ -1019,8 +1024,10 @@ export default function CheckoutPage() {
                       </label>
                       <input
                         id={`checkout-${field}`}
-                        type={field === 'email' ? 'email' : 'text'}
-                        autoComplete={field === 'email' ? 'email' : undefined}
+                        name={key}
+                        type={type}
+                        inputMode={inputMode}
+                        autoComplete={autoComplete}
                         value={form[field]}
                         onChange={(event) => setFieldValue(field, event.target.value)}
                         aria-invalid={Boolean(fieldErrors[field])}
@@ -1068,14 +1075,24 @@ export default function CheckoutPage() {
                   <ChevronRight className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
-            </section>
-          )}
+          </CheckoutSection>
 
-          {step === 'shipping' && (
-            <section className="rounded-2xl border p-4 sm:p-5 md:p-6" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
-              <h2 className="heading-section text-lg mb-2" style={{ color: 'var(--color-foreground)' }}>
-                {t('shippingTitle')}
-              </h2>
+          {/* ── Step 2: Shipping ── */}
+          <CheckoutSection
+            step="shipping"
+            currentStep={step}
+            completedSteps={completedSteps}
+            onToggle={setStep}
+            summaryContent={
+              selectedDeliveryOption
+                ? `${translateDeliveryOptionName(locale, selectedDeliveryOption)} · ${
+                    selectedDeliveryOption.price.amount === 0
+                      ? t('freeShipping')
+                      : formatPrice(selectedDeliveryOption.price.amount, selectedDeliveryOption.price.currency)
+                  }`
+                : undefined
+            }
+          >
               <p className="text-sm mb-5" style={{ color: 'var(--color-muted-foreground)' }}>
                 {t('selectShipping')}
               </p>
@@ -1110,32 +1127,24 @@ export default function CheckoutPage() {
                   );
                 })}
               </div>
+          </CheckoutSection>
 
-              <div className="mt-6 flex justify-between">
-                <button
-                  type="button"
-                  onClick={() => setStep('delivery')}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium"
-                  style={{ color: 'var(--color-muted-foreground)' }}
-                >
-                  <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                  {t('backStep')}
-                </button>
-              </div>
-            </section>
-          )}
-
-          {step === 'payment' && (
-            <section className="rounded-2xl border p-4 sm:p-5 md:p-6" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
+          {/* ── Step 3: Payment ── */}
+          <CheckoutSection
+            step="payment"
+            currentStep={step}
+            completedSteps={completedSteps}
+            onToggle={setStep}
+            summaryContent={
+              selectedPaymentMethod
+                ? translatePaymentMethodName(locale, selectedPaymentMethod)
+                : undefined
+            }
+          >
               <div className="flex items-center justify-between gap-3 mb-4">
-                <div>
-                  <h2 className="heading-section text-lg" style={{ color: 'var(--color-foreground)' }}>
-                    {t('paymentTitle')}
-                  </h2>
-                  <p className="text-sm mt-1" style={{ color: 'var(--color-muted-foreground)' }}>
-                    {t('selectPayment')}
-                  </p>
-                </div>
+                <p className="text-sm" style={{ color: 'var(--color-muted-foreground)' }}>
+                  {t('selectPayment')}
+                </p>
                 <button
                   type="button"
                   onClick={() => void initializeCheckoutHandoff()}
@@ -1188,29 +1197,16 @@ export default function CheckoutPage() {
                   })}
                 </div>
               )}
+          </CheckoutSection>
 
-              <div className="mt-6 flex justify-between">
-                <button
-                  type="button"
-                  onClick={() => setStep('shipping')}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium"
-                  style={{ color: 'var(--color-muted-foreground)' }}
-                >
-                  <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                  {t('backStep')}
-                </button>
-              </div>
-            </section>
-          )}
-
-          {step === 'review' && (
-            <section className="space-y-6">
-              <div className="rounded-2xl border p-4 sm:p-5 md:p-6" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
-                <h2 className="heading-section text-lg mb-4" style={{ color: 'var(--color-foreground)' }}>
-                  {t('reviewTitle')}
-                </h2>
-
-                <div className="grid gap-5 md:grid-cols-2">
+          {/* ── Step 4: Review & Place Order ── */}
+          <CheckoutSection
+            step="review"
+            currentStep={step}
+            completedSteps={completedSteps}
+            onToggle={setStep}
+          >
+              <div className="grid gap-5 md:grid-cols-2 mb-5">
                   <div className="rounded-2xl border p-4" style={{ borderColor: 'var(--color-border)' }}>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--color-muted-foreground)' }}>
                       {t('delivery')}
@@ -1255,9 +1251,9 @@ export default function CheckoutPage() {
                       </p>
                     )}
                   </div>
-                </div>
+              </div>
 
-                <div className="mt-5">
+              <div className="mb-5">
                   <label htmlFor="review-note" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--color-muted-foreground)' }}>
                     {t('note')}
                   </label>
@@ -1270,19 +1266,9 @@ export default function CheckoutPage() {
                     style={{ borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}
                     placeholder={t('notePlaceholder')}
                   />
-                </div>
               </div>
 
-              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-                <button
-                  type="button"
-                  onClick={() => setStep('payment')}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium"
-                  style={{ color: 'var(--color-muted-foreground)' }}
-                >
-                  <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                  {t('backStep')}
-                </button>
+              <div className="flex justify-end">
                 <button
                   type="button"
                   onClick={() => void handlePlaceOrder()}
@@ -1294,8 +1280,7 @@ export default function CheckoutPage() {
                   {busy ? t('processing') : t('placeOrder')}
                 </button>
               </div>
-            </section>
-          )}
+          </CheckoutSection>
         </div>
 
         <div className="hidden lg:block">
