@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery, useClient } from 'urql';
 import { SlidersHorizontal, Search, X } from 'lucide-react';
-import { PRODUCTS_QUERY } from '@/lib/graphql/operations/grocery';
+import { PRODUCT_COUNTRY_ORIGINS_QUERY, PRODUCTS_QUERY } from '@/lib/graphql/operations/grocery';
 import { ProductCard } from '@/components/product/ProductCard';
 import { AllergenFilter } from '@/components/grocery/AllergenFilter';
 import { SortDropdown, SORT_OPTIONS } from '@/components/grocery/SortDropdown';
@@ -17,6 +17,26 @@ const PAGE_SIZE = 24;
 const DIETARY_OPTIONS = ['vegan', 'vegetarian', 'gluten-free', 'lactose-free', 'sugar-free'];
 const CERT_OPTIONS = ['organic', 'halal', 'kosher'];
 const ZONE_OPTIONS: StorageZone[] = ['FROZEN', 'CHILLED', 'AMBIENT'];
+const ORIGIN_PRIORITY = ['Wietnam', 'Korea Południowa', 'Japonia', 'Chiny', 'Tajlandia'];
+
+type CountryOriginFacet = {
+  value: string;
+  count: number;
+};
+
+function sortCountryOrigins(facets: CountryOriginFacet[]) {
+  return [...facets].sort((a, b) => {
+    const priorityA = ORIGIN_PRIORITY.indexOf(a.value);
+    const priorityB = ORIGIN_PRIORITY.indexOf(b.value);
+
+    if (priorityA !== -1 || priorityB !== -1) {
+      return (priorityA === -1 ? Number.MAX_SAFE_INTEGER : priorityA)
+        - (priorityB === -1 ? Number.MAX_SAFE_INTEGER : priorityB);
+    }
+
+    return b.count - a.count || a.value.localeCompare(b.value, 'pl');
+  });
+}
 
 function ProductSkeleton() {
   return (
@@ -36,6 +56,7 @@ function ProductSkeleton() {
 
 export default function ProductsPage() {
   const t = useTranslations('products');
+  const tProduct = useTranslations('product');
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialZone = searchParams.get('zone') as StorageZone | null;
@@ -45,6 +66,7 @@ export default function ProductsPage() {
   const [excludeAllergens, setExcludeAllergens] = useState<string[]>([]);
   const [dietaryTags, setDietaryTags] = useState<string[]>([]);
   const [certifications, setCertifications] = useState<string[]>([]);
+  const [countryOrigins, setCountryOrigins] = useState<string[]>([]);
   const [storageZone, setStorageZone] = useState<StorageZone | ''>(initialZone || '');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [search, setSearch] = useState(initialSearch);
@@ -68,10 +90,11 @@ export default function ProductsPage() {
     if (excludeAllergens.length > 0) f.excludeAllergens = excludeAllergens;
     if (dietaryTags.length > 0) f.dietaryTags = dietaryTags;
     if (certifications.length > 0) f.certifications = certifications;
+    if (countryOrigins.length > 0) f.countryOfOrigin = countryOrigins;
     if (storageZone) f.storageZone = storageZone;
     if (search.trim()) f.search = search.trim();
     return f;
-  }, [excludeAllergens, dietaryTags, certifications, storageZone, search]);
+  }, [excludeAllergens, dietaryTags, certifications, countryOrigins, storageZone, search]);
 
   const [result] = useQuery({
     query: PRODUCTS_QUERY,
@@ -80,6 +103,14 @@ export default function ProductsPage() {
       first: PAGE_SIZE,
       filter: Object.keys(filter).length > 0 ? filter : undefined,
       sortBy: { field: sortOption.field, direction: sortOption.direction },
+    },
+  });
+
+  const [originResult] = useQuery({
+    query: PRODUCT_COUNTRY_ORIGINS_QUERY,
+    variables: {
+      channel,
+      first: 30,
     },
   });
 
@@ -94,7 +125,8 @@ export default function ProductsPage() {
   }, [result.data]);
 
   const totalCount = result.data?.products?.totalCount ?? 0;
-  const activeFilterCount = excludeAllergens.length + dietaryTags.length + certifications.length + (storageZone ? 1 : 0);
+  const originFacets = sortCountryOrigins(originResult.data?.productCountryOrigins || []);
+  const activeFilterCount = excludeAllergens.length + dietaryTags.length + certifications.length + countryOrigins.length + (storageZone ? 1 : 0);
 
   function updateUrl(newSort: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -139,6 +171,7 @@ export default function ProductsPage() {
     setExcludeAllergens([]);
     setDietaryTags([]);
     setCertifications([]);
+    setCountryOrigins([]);
     setStorageZone('');
     setSearch('');
   }
@@ -276,6 +309,37 @@ export default function ProductsPage() {
               ))}
             </div>
           </fieldset>
+
+          {originFacets.length > 0 && (
+            <fieldset>
+              <legend className="text-sm font-medium mb-2" style={{ color: 'var(--color-foreground)' }}>{tProduct('origin')}</legend>
+              <div className="flex flex-wrap gap-2" role="group">
+                {originFacets.map((origin) => {
+                  const isActive = countryOrigins.includes(origin.value);
+
+                  return (
+                    <button
+                      key={origin.value}
+                      type="button"
+                      onClick={() => setCountryOrigins((prev) => (
+                        isActive ? prev.filter((value) => value !== origin.value) : [...prev, origin.value]
+                      ))}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors duration-fast"
+                      style={{
+                        borderColor: isActive ? 'var(--color-primary)' : 'var(--color-border)',
+                        backgroundColor: isActive ? 'var(--color-accent)' : 'transparent',
+                        color: isActive ? 'var(--color-primary)' : 'var(--color-muted-foreground)',
+                      }}
+                      aria-pressed={isActive}
+                    >
+                      <span>{origin.value}</span>
+                      <span className="text-[10px] opacity-70">({origin.count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+          )}
 
           {activeFilterCount > 0 && (
             <button

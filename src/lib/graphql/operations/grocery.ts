@@ -104,6 +104,15 @@ export const PRODUCTS_BY_ZONE_QUERY = `
   }
 `;
 
+export const PRODUCT_COUNTRY_ORIGINS_QUERY = `
+  query ProductCountryOrigins($channel: String!, $first: Int) {
+    productCountryOrigins(channel: $channel, first: $first) {
+      value
+      count
+    }
+  }
+`;
+
 export const RECIPE_FIELDS = `
   fragment RecipeFields on Recipe {
     id
